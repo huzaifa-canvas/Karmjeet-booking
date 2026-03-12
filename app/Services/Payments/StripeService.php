@@ -18,13 +18,13 @@ class StripeService
     public $stripe;
 
     public function __construct() {
-        $this->stripe  = new \Stripe\StripeClient('sk_test_');
+        $this->stripe  = new \Stripe\StripeClient('sk_test_51MAZe4HnBjRuAp0i6FEIZsanltRn0GwMCtNOexCzqQaheGz1xuhw1iCShIywkSa3QNMtSuaWwiJqBTqb4u2JjnOb00Jm3Uhkj1');
     }
 
     public function createCustomer($request)
     {
 
-        Stripe\Stripe::setApiKey('sk_test_');
+        Stripe\Stripe::setApiKey('sk_test_51MAZe4HnBjRuAp0i6FEIZsanltRn0GwMCtNOexCzqQaheGz1xuhw1iCShIywkSa3QNMtSuaWwiJqBTqb4u2JjnOb00Jm3Uhkj1');
         $customer = Stripe\Customer::create(array(
             'name'      => $request->name,
             'email'     => $request->email,
