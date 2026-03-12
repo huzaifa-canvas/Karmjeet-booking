@@ -695,7 +695,7 @@
                             <span class="menu-title text-truncate" data-i18n="Dashboards">Payment list</span>
                         </a>
                     </li> --}}
-                    <li class="nav-item"><a class="d-flex align-items-center" href="#">
+                    <li class="nav-item d-none"><a class="d-flex align-items-center" href="#">
                         <i data-feather='book-open'></i>
                         <span class="menu-title text-truncate" data-i18n="Invoice"> Booking History</span></a>
                         <ul class="menu-content">
@@ -718,7 +718,7 @@
                         </ul>
                     </li>
 
-                    <li class="nav-item {{ navActive(['class']) }}">
+                    <li class="nav-item d-none {{ navActive(['class']) }}">
                         <a class="d-flex align-items-center" href="{{ route('class') }}">
                             <i data-feather='shopping-bag'></i>
                             <span class="menu-title text-truncate" data-i18n="Dashboards">Book Regular Session</span>
@@ -727,7 +727,7 @@
 
 
                     {{-- @if (isset(getFreeSessionUrl()->slug) && getUserSessionCount() == 0) --}}
-                        <li class="m-2 get-free-session" style="white-space: normal">
+                        <li class="m-2 get-free-session d-none" style="white-space: normal">
                             {{-- <div class="card">
                                 <div class="card-body">
                                     <p>Once it has been set up you can do these things</p> --}}
