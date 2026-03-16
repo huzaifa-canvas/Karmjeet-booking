@@ -282,6 +282,23 @@
                         </ul>
                     </li>
 
+                    <li class="nav-item"><a class="d-flex align-items-center" href="#">
+                        <i data-feather='layout'></i>
+                        <span class="menu-title text-truncate" data-i18n="Invoice">Schedule Classes</span></a>
+                        <ul class="menu-content">
+                            <li class="{{ navActive(['schedule-session-list']) }}">
+                                <a class="d-flex align-items-center" href="{{ route('schedule-session-list') }}">
+                                    <i data-feather="circle"></i><span class="menu-item text-truncate" data-i18n="List">List</span>
+                                </a>
+                            </li>
+                            <li class="{{ navActive(['schedule-session-create', 'schedule-session-edit']) }}">
+                                <a class="d-flex align-items-center" href="{{ route('schedule-session-create') }}">
+                                    <i data-feather="circle"></i><span class="menu-item text-truncate" data-i18n="Add">Add New</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
                     {{-- <li class="nav-item"><a class="d-flex align-items-center" href="#">
                         <i data-feather='airplay'></i>
                         <span class="menu-title text-truncate" data-i18n="Invoice">Courses</span></a>
@@ -343,7 +360,7 @@
                         <span class="menu-title text-truncate" data-i18n="Invoice">On-Demand Sessions</span></a>
                         <ul class="menu-content">
 
-                            <li class="{{ navActive(['schedule-session-list']) }}">
+                            {{-- <li class="{{ navActive(['schedule-session-list']) }}">
                                 <a class="d-flex align-items-center" href="{{ route('schedule-session-list') }}">
                                     <i data-feather="circle"></i><span class="menu-item text-truncate" data-i18n="Add">List</span>
                                 </a>
@@ -352,7 +369,7 @@
                                 <a class="d-flex align-items-center" href="{{ route('schedule-session-create') }}">
                                     <i data-feather="circle"></i><span class="menu-item text-truncate" data-i18n="Add">Add new</span>
                                 </a>
-                            </li>
+                            </li> --}}
                             {{-- <li class="{{ navActive(['grade-list', 'grade-edit', 'grade-create']) }}">
                                 <a class="d-flex align-items-center" href="{{ route('grade-list') }}">
                                     <i data-feather="circle"></i><span class="menu-item text-truncate" data-i18n="List">Grade list</span>
@@ -716,6 +733,13 @@
                                 </a>
                             </li>
                         </ul>
+                    </li>
+
+                    <li class="nav-item {{ navActive(['user.schedule-session-list', 'user.schedule-session-detail']) }}">
+                        <a class="d-flex align-items-center" href="{{ route('user.schedule-session-list') }}">
+                            <i data-feather='layout'></i>
+                            <span class="menu-title text-truncate" data-i18n="Schedule Classes">Schedule Classes</span>
+                        </a>
                     </li>
 
                     <li class="nav-item d-none {{ navActive(['class']) }}">

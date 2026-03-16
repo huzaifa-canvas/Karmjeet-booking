@@ -122,16 +122,15 @@ Route::controller(SessionGradeController::class)->group(function (){
     Route::get('grade-delete/{id}', 'destroy')->name('grade-delete')->middleware(['auth', 'Allow:admin',]);
 });
 
-Route::controller(SessionController::class)->group(function (){
-    Route::get('schedule-session-create', 'create')->name('schedule-session-create')->middleware(['auth', 'Allow:admin',]);
-    Route::post('schedule-session-create', 'store')->name('schedule-session-store')->middleware(['auth', 'Allow:admin',]);
-
-    Route::get('schedule-session-edit/{id}', 'edit')->name('schedule-session-edit')->middleware(['auth', 'Allow:admin',]);
-    Route::post('schedule-session-update/{id}', 'update')->name('schedule-session-update')->middleware(['auth', 'Allow:admin',]);
-
-    Route::get('schedule-session-list', 'index')->name('schedule-session-list')->middleware(['auth', 'Allow:admin',]);
-    Route::get('schedule-session-delete/{id}', 'destroy')->name('schedule-session-delete')->middleware(['auth', 'Allow:admin',]);
-});
+// Old schedule-session routes replaced by Admin\ScheduleSessionController
+// Route::controller(SessionController::class)->group(function (){
+//     Route::get('schedule-session-create', 'create')->name('schedule-session-create')->middleware(['auth', 'Allow:admin',]);
+//     Route::post('schedule-session-create', 'store')->name('schedule-session-store')->middleware(['auth', 'Allow:admin',]);
+//     Route::get('schedule-session-edit/{id}', 'edit')->name('schedule-session-edit')->middleware(['auth', 'Allow:admin',]);
+//     Route::post('schedule-session-update/{id}', 'update')->name('schedule-session-update')->middleware(['auth', 'Allow:admin',]);
+//     Route::get('schedule-session-list', 'index')->name('schedule-session-list')->middleware(['auth', 'Allow:admin',]);
+//     Route::get('schedule-session-delete/{id}', 'destroy')->name('schedule-session-delete')->middleware(['auth', 'Allow:admin',]);
+// });
 
 Route::controller(SubjectController::class)->group(function (){
     Route::get('subject-create', 'create')->name('subject-create')->middleware(['auth', 'Allow:admin',]);
@@ -330,6 +329,22 @@ Route::controller(\App\Http\Controllers\Admin\MemberProfileController::class)->m
     Route::get('member-profiles/{id}', 'show')->name('admin.member-profiles.show');
     Route::get('member-profiles/{id}/edit', 'edit')->name('admin.member-profiles.edit');
     Route::post('member-profiles/{id}/update', 'update')->name('admin.member-profiles.update');
+});
+
+// Admin: Schedule Sessions
+Route::controller(\App\Http\Controllers\Admin\ScheduleSessionController::class)->middleware(['auth', 'Allow:admin'])->group(function () {
+    Route::get('schedule-sessions', 'index')->name('schedule-session-list');
+    Route::get('schedule-session/create', 'create')->name('schedule-session-create');
+    Route::post('schedule-session/store', 'store')->name('schedule-session-store');
+    Route::get('schedule-session/{id}/edit', 'edit')->name('schedule-session-edit');
+    Route::post('schedule-session/{id}/update', 'update')->name('schedule-session-update');
+    Route::get('schedule-session/{id}/delete', 'destroy')->name('schedule-session-delete');
+});
+
+// User: Schedule Sessions
+Route::controller(\App\Http\Controllers\User\ScheduleClassController::class)->middleware(['auth', 'profile.complete', 'Allow:user'])->group(function () {
+    Route::get('user/schedule-classes', 'index')->name('user.schedule-session-list');
+    Route::get('user/schedule-classes/{id}', 'show')->name('user.schedule-session-detail');
 });
 
 require __DIR__.'/auth.php';
