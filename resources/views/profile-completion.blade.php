@@ -357,6 +357,103 @@
                             </div>
                         </div>
 
+                          {{-- ============================================ --}}
+                        {{-- Full Waiver, Release & Indemnification Agreement --}}
+                        {{-- ============================================ --}}
+                        <div class="mb-3">
+                            <h5 class="section-title">Waiver, Release of Liability, Assumption of Risk & Indemnification Agreement</h5>
+                            <div class="mt-1 p-2 border rounded" style=" overflow-y: auto; background-color: #f9f9f9;">
+                                <p class="fw-bold text-center">Kaiten Mixed Martial Arts Academy and Fitness Ltd.</p>
+                                <p class="fw-bold text-center">WAIVER, RELEASE OF LIABILITY, ASSUMPTION OF RISK, AND INDEMNIFICATION AGREEMENT</p>
+                                <p class="text-muted small">This Agreement is effective upon execution and governs all participation on site and off site — in any activity sponsored, organized, supervised, hosted, promoted, or otherwise associated with Kaiten Mixed Martial Arts Academy and Fitness Ltd.</p>
+
+                                <p class="fw-bold mt-2">PARTIES</p>
+                                <p><strong>1. "Participant"</strong> — The individual signing below who engages in any activity, class, seminar, competition, workshop, fitness session, training session, sparring match, tournament, event, or any other martial arts related endeavour conducted by, for, or in association with Kaiten MMA, whether occurring at 185 Dominion Street, Prince George, BC, or at any other location.</p>
+                                <p><strong>2. "Released Parties"</strong> — Kaiten Mixed Martial Arts Academy and Fitness Ltd., its owners, shareholders, directors, officers, employees, instructors, coaches, trainers, volunteers, agents, contractors, independent contractors, successors, assigns, affiliates, sponsors, licensees, parents, heirs, executors, administrators, insurers, and any other person or entity acting on behalf of or in connection with Kaiten MMA — in their personal and representative capacities.</p>
+                                <p><strong>3. "Parent/Guardian"</strong> — If the Participant is under the age of 18 years, the individual who is the legal parent or court appointed guardian of the Participant.</p>
+
+                                <p class="mt-2">A. Participant desires to engage in martial arts related activities, fitness training, mixed martial arts ("MMA"), Brazilian Jiu Jitsu, Muay Thai, Kickboxing, Taekwondo, Judo, Wrestling, Krav Maga, self defence drills, sparring (light, medium, or full contact), competition preparation, conditioning classes, yoga/fitness integration, pad work, drilling, partner drills, tournament participation, and any other activity, event, or programming offered by Kaiten MMA — whether conducted on Kaiten's premises at 185 Dominion Street, Prince George, BC, or at any off site location (collectively, known as any "Activities").</p>
+                                <p>B. Participant acknowledges that the Activities involve inherent, unavoidable, and serious risks of personal injury, permanent disability, paralysis, brain injury, spinal injury, loss of limbs, concussion, death, property damage, emotional distress, and economic loss — risks that <strong>cannot be eliminated</strong> even with the utmost care, supervision, or safety equipment.</p>
+                                <p>C. Participant voluntarily chooses to participate in the Activities with full knowledge of these risks.</p>
+                                <p>D. This Agreement is intended to provide the broadest possible legal protection to the Released Parties permissible under the laws of British Columbia and Canada.</p>
+
+                                <p class="fw-bold mt-2">1. ASSUMPTION OF RISK</p>
+                                <p>1.1 Participant expressly acknowledges, understands, and voluntarily accepts the inherent risks, dangers, and hazards associated with the Activities, including but not limited to:</p>
+                                <ul class="small">
+                                    <li>Strikes, kicks, throws, joint locks, chokes, grappling, sparring, and contact with training partners;</li>
+                                    <li>Falls, collisions, impacts with equipment (bags, pads, cages, mats, ropes, walls, flooring);</li>
+                                    <li>Over exertion, heat related illness, dehydration, cardiac events, musculoskeletal injury;</li>
+                                    <li>Accidental injury caused by the negligence (ordinary or gross) of any other participant, instructor, or third party;</li>
+                                    <li>Injury occurring outside Kaiten MMA's facility (e.g., at competitions, seminars, outdoor training sessions, partner drills at parks, or any location where Kaiten MMA branded Activities are conducted);</li>
+                                    <li>Exposure to ANY infectious diseases (including but not limited to COVID-19, influenza, MRSA, staph);</li>
+                                    <li>Injuries arising from failure to follow safety rules, instructor instructions, or Participant's own physical limitations;</li>
+                                    <li>ANY AND ALL RISKS, KNOWN OR UNKNOWN, FORESEEABLE OR UNFORESEEABLE, associated with martial arts training or fitness activities.</li>
+                                </ul>
+                                <p>1.2 Participant covenants that they are physically fit to participate, have disclosed ALL medical conditions, injuries, or limitations to Kaiten MMA staff, and will immediately cease participation if they feel unwell, fatigued, or injured.</p>
+                                <p>1.3 NO REPRESENTATION HAS BEEN MADE BY THE RELEASED PARTIES — EXPRESS OR IMPLIED — THAT THE ACTIVITIES ARE SAFE. Participant participates solely at their own risk.</p>
+
+                                <p class="fw-bold mt-2">2. RELEASE AND WAIVER OF LIABILITY</p>
+                                <p>2.1 Participant (and, if Participant is a minor, Parent/Guardian on Participant's behalf) hereby irrevocably RELEASES, WAIVES, DISCHARGES, AND COVENANTS NOT TO SUE the Released Parties from any and all liability, claims, demands, actions, suits, proceedings, damages, losses, injuries, deaths, costs, expenses, or liabilities whatsoever — whether based on contract, tort (including negligence, gross negligence, or willful misconduct), strict liability, statutory violation, breach of duty, or otherwise — arising out of, related to, or in any way connected with:</p>
+                                <ul class="small">
+                                    <li>Participation in the Activities;</li>
+                                    <li>Any injury, disability, death, or property damage sustained on or off Kaiten's premises;</li>
+                                    <li>Any act, omission, decision, or conduct of any Released Party before, during, or after the Activities;</li>
+                                    <li>Any claim for loss of consortium, loss of earnings, emotional distress, or punitive damages;</li>
+                                    <li>ANY CLAIM BY A PARENT OR GUARDIAN asserting that Kaiten MMA failed to protect a minor participant.</li>
+                                </ul>
+                                <p>THIS RELEASE IS INTENDED TO BE AS BROAD AND COMPREHENSIVE AS IS PERMISSIBLE UNDER APPLICABLE LAW IN BRITISH COLUMBIA.</p>
+                                <p>2.2 This release applies to injuries or claims occurring NOW, IN THE PAST, OR IN THE FUTURE, and survives the termination of participation.</p>
+
+                                <p class="fw-bold mt-2">3. INDEMNIFICATION CLAUSE (THE CORE OF THIS AGREEMENT)</p>
+                                <p>3.1 Participant (and, if Participant is a minor, Parent/Guardian) agrees to INDEMNIFY, DEFEND, AND HOLD HARMLESS the Released Parties from and against any and all claims, demands, lawsuits, judgments, awards, settlements, losses, damages, costs, attorneys' fees, expenses, or liabilities — including but not limited to claims brought BY OR ON BEHALF OF THE PARTICIPANT, BY A PARENT/GUARDIAN, BY A THIRD PARTY, OR BY THE PARTICIPANT'S ESTATE — arising in any way from the Participant's participation in the Activities, whether on site or off site.</p>
+                                <p>3.2 Specifically, Participant/Parent/Guardian agrees to:</p>
+                                <ul class="small">
+                                    <li>Pay all costs of defence (including reasonable legal fees) incurred by any Released Party in connection with any claim, lawsuit, or administrative proceeding arising from the Participant's involvement with Kaiten MMA;</li>
+                                    <li>Reimburse the Released Parties immediately for any settlement paid, judgment entered, or damages awarded against them arising from such claims;</li>
+                                    <li>Indemnify the Released Parties against any claim brought by a parent or guardian alleging in any way that Kaiten MMA was negligent, failed to supervise, failed to provide a safe environment, or otherwise caused injury to a minor participant.</li>
+                                </ul>
+                                <p>PARENTS/GUARDIANS WHO SIGN THIS AGREEMENT ARE THEMSELVES BOUND BY THIS INDEMNIFICATION OBLIGATION AND WAIVE ANY RIGHT TO SEEK INDEMNIFICATION FROM THE RELEASED PARTIES.</p>
+                                <p>3.3 This indemnification obligation survives the Participant's death. In the event of the Participant's death, the Participant's estate, heirs, executors, and administrators shall be bound by this Agreement and shall continue the indemnification obligations set forth herein.</p>
+                                <p>3.4 NO INSURANCE CARRIED BY KAITEN MMA (OR ANY RELEASED PARTY) SHALL BE RESPONSIBLE FOR, NOR SHALL IT INURE TO THE BENEFIT OF, ANY CLAIM ARISING FROM PARTICIPANT'S ACTIVITIES. Participant is solely responsible for obtaining their own personal injury and liability insurance.</p>
+
+                                <p class="fw-bold mt-2">4. MINOR PARTICIPANTS – PARENT/GUARDIAN OBLIGATIONS</p>
+                                <p>4.1 IF PARTICIPANT IS UNDER 18 YEARS OF AGE: The Parent/Guardian MUST SIGN THIS AGREEMENT on the Participant's behalf.</p>
+                                <p>By signing, the Parent/Guardian certifies that they:</p>
+                                <ul class="small">
+                                    <li>Have read and fully understand all provisions of this Agreement;</li>
+                                    <li>Have explained the risks, waivers, and indemnities to the minor Participant in language the minor understands;</li>
+                                    <li>Voluntarily consent to the minor's participation;</li>
+                                    <li>PERSONALLY ASSUMES ALL RISK associated with the minor's participation and waives any claim against the Released Parties for any injury to the minor;</li>
+                                    <li>AGREES TO INDEMNIFY THE RELEASED PARTIES for any claim, lawsuit, or expense they (the Parent/Guardian) may bring or cause on behalf of the minor — including claims alleging parental rights violations, lack of supervision, or failure to protect the minor.</li>
+                                </ul>
+                                <p>4.2 A MINOR'S SIGNATURE ALONE IS INSUFFICIENT. The Parent/Guardian's signature is mandatory for the Agreement to be valid.</p>
+
+                                <p class="fw-bold mt-2">5. ACKNOWLEDGEMENTS & COVENANTS</p>
+                                <p>5.1 <strong>Voluntary Execution:</strong> Participant (and Parent/Guardian, if applicable) acknowledges that: They have read this Agreement carefully; They have had sufficient opportunity to ask questions and receive satisfactory answers; They have not been coerced, pressured, or induced by any representation to sign; They sign freely, voluntarily, and with full knowledge of its legal consequences.</p>
+                                <p>5.2 <strong>No Oral Modifications:</strong> Any modification to this Agreement must be in writing and signed by an authorized officer of Kaiten MMA. Oral representations are VOID.</p>
+                                <p>5.3 <strong>Rules & Instructions:</strong> Participant agrees to obey all rules, policies, safety protocols, and verbal/written instructions of Kaiten staff at all times, whether on site or off site. Violation of any rule voids the Participant's right to continue participation and does NOT diminish the enforceability of this waiver. Kaiten MMA retains the right to terminate any membership at any time to anyone for any reason.</p>
+                                <p>5.4 <strong>Medical Consent:</strong> Participant consents to emergency medical treatment (including ambulance transport, hospital care, surgery, blood transfusion) if, in the judgment of a medical professional or Kaiten MMA staff, such treatment is necessary to prevent death or serious injury. Participant waives any claim against the Released Parties for acting in good faith reliance on this consent.</p>
+                                <p>5.5 <strong>Photography/Video Release:</strong> Participant grants Kaiten MMA the <strong>irrevocable right</strong> to photograph, video record, and otherwise capture Participant's image during Activities, and to use, publish, broadcast, or display such images for any legal reason, promotional, educational, advertising, or archival purposes worldwide, in perpetuity, without compensation.</p>
+
+                                <p class="fw-bold mt-2">6. GOVERNING LAW & ENFORCEABILITY</p>
+                                <p>6.1 This Agreement is governed by and construed in accordance with the laws of the Province of British Columbia and the laws of Canada, without regard to conflict of law principles.</p>
+                                <p>6.2 <strong>Severability:</strong> If any clause of this Agreement is deemed unenforceable by a court of competent jurisdiction, the remaining clauses shall remain in full force and effect.</p>
+                                <p>6.3 <strong>Entire Agreement:</strong> This document constitutes the complete and exclusive statement of the agreement between the Parties concerning the subject matter herein and supersedes all prior discussions, representations, or agreements.</p>
+                                <p>6.4 <strong>BC Case Law Support:</strong> The Supreme Court of British Columbia consistently upholds comprehensive waivers for inherently risky recreational activities (see Teno v. Arnold (1978), Ogden v. City of Vancouver (2001), British Columbia (Workers' Compensation Board) v. Fraser Health Authority (2020)). Martial arts training is explicitly recognized as an activity where participants assume the risk, making waivers of this breadth fully enforceable.</p>
+
+                                <p class="fw-bold text-danger mt-2">IMPORTANT NOTICE: By signing this Agreement, you acknowledge that martial arts training wherever it occurs carries serious, permanent risks. You are solely responsible for your safety and for indemnifying Kaiten Mixed Martial Arts Academy and Fitness Ltd. against any claim arising from your participation. If you do not understand any provision of this Agreement, do not sign — seek independent legal advice.</p>
+                            </div>
+
+                            <div class="form-check mt-2 mb-1">
+                                <input type="checkbox" name="waiver_agreement_read" value="1" id="waiver_agreement_read" class="form-check-input" required {{ old('waiver_agreement_read') ? 'checked' : '' }}>
+                                <label class="form-check-label fw-bold" for="waiver_agreement_read">I have read and fully understand the above Waiver, Release of Liability, Assumption of Risk & Indemnification Agreement.</label>
+                            </div>
+                        </div>
+
+                        {{-- ============================================ --}}
+                        {{-- Signature & Final Acceptance --}}
+                        {{-- ============================================ --}}
+
                         {{-- ============================================ --}}
                         {{-- Signature & Final Acceptance --}}
                         {{-- ============================================ --}}
