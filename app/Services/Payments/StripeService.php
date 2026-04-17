@@ -18,20 +18,113 @@ class StripeService
     public $stripe;
 
     public function __construct() {
-        $this->stripe  = new \Stripe\StripeClient('sk_test_51MAZe4HnBjRuAp0i6FEIZsanltRn0GwMCtNOexCzqQaheGz1xuhw1iCShIywkSa3QNMtSuaWwiJqBTqb4u2JjnOb00Jm3Uhkj1');
+        $this->stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
+        Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
     }
 
     public function createCustomer($request)
     {
-
-        Stripe\Stripe::setApiKey('sk_test_51MAZe4HnBjRuAp0i6FEIZsanltRn0GwMCtNOexCzqQaheGz1xuhw1iCShIywkSa3QNMtSuaWwiJqBTqb4u2JjnOb00Jm3Uhkj1');
-        $customer = Stripe\Customer::create(array(
+        $customer = $this->stripe->customers->create([
             'name'      => $request->name,
             'email'     => $request->email,
-            'source'    => $request->token,
-          ));
+        ]);
 
         return $customer;
+    }
+
+    public function createCheckoutSession($user, $class, $successUrl, $cancelUrl)
+    {
+        // 1. Ensure Product exists
+        if (!$class->stripe_product_id) {
+            $product = $this->stripe->products->create(['name' => $class->name]);
+            $class->update(['stripe_product_id' => $product->id]);
+        }
+
+        $unitAmount = (int)($class->price * 100);
+
+        // 2. Get or Create Recurring Price
+        $recurringPriceId = $class->stripe_price_id;
+        if ($recurringPriceId) {
+            try {
+                $stripePrice = $this->stripe->prices->retrieve($recurringPriceId);
+                if ($stripePrice->unit_amount !== $unitAmount) {
+                    $recurringPriceId = null; // Price changed, need new one
+                }
+            } catch (\Exception $e) {
+                $recurringPriceId = null;
+            }
+        }
+
+        if (!$recurringPriceId) {
+            $newPrice = $this->stripe->prices->create([
+                'currency' => 'usd',
+                'unit_amount' => $unitAmount,
+                'recurring' => ['interval' => 'month'],
+                'product' => $class->stripe_product_id,
+            ]);
+            $recurringPriceId = $newPrice->id;
+            $class->update(['stripe_price_id' => $recurringPriceId]);
+        }
+
+        // 3. Get or Create Security Deposit Price (One-time)
+        $securityPriceId = $class->stripe_security_price_id;
+        if ($securityPriceId) {
+            try {
+                $stripePrice = $this->stripe->prices->retrieve($securityPriceId);
+                if ($stripePrice->unit_amount !== $unitAmount) {
+                    $securityPriceId = null;
+                }
+            } catch (\Exception $e) {
+                $securityPriceId = null;
+            }
+        }
+
+        if (!$securityPriceId) {
+            $newPrice = $this->stripe->prices->create([
+                'currency' => 'usd',
+                'unit_amount' => $unitAmount,
+                'product' => $class->stripe_product_id,
+            ]);
+            $securityPriceId = $newPrice->id;
+            $class->update(['stripe_security_price_id' => $securityPriceId]);
+        }
+
+        return $this->stripe->checkout->sessions->create([
+            'payment_method_types' => ['card'],
+            'line_items' => [
+                [
+                    'price' => $recurringPriceId,
+                    'quantity' => 1,
+                ],
+                [
+                    'price' => $securityPriceId,
+                    'quantity' => 1,
+                ],
+            ],
+            'mode' => 'subscription',
+            'customer_email' => $user->email,
+            'success_url' => $successUrl . '?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => $cancelUrl,
+            'metadata' => [
+                'user_id' => $user->id,
+                'martial_arts_class_id' => $class->id,
+            ],
+        ]);
+    }
+
+    public function getCheckoutSession($sessionId)
+    {
+        return $this->stripe->checkout->sessions->retrieve($sessionId, ['expand' => ['subscription.latest_invoice']]);
+    }
+
+    public function cancelSubscription($subscriptionId)
+    {
+        return $this->stripe->subscriptions->cancel($subscriptionId);
+    }
+
+    public function getInvoice($invoiceId)
+    {
+        return $this->stripe->invoices->retrieve($invoiceId);
     }
 
     public function sessionCharge($amount, $token, $session)
@@ -108,6 +201,39 @@ class StripeService
             ]);
 
         return $link->url;
+    }
+
+    /**
+     * Create a Stripe Checkout Session for one-time product payment.
+     */
+    public function createProductPaymentSession($user, $cartItems, $orderId, $successUrl, $cancelUrl)
+    {
+        $lineItems = [];
+        foreach ($cartItems as $productId => $item) {
+            $lineItems[] = [
+                'price_data' => [
+                    'currency'     => 'usd',
+                    'unit_amount'  => (int)($item['price'] * 100),
+                    'product_data' => [
+                        'name' => $item['name'],
+                    ],
+                ],
+                'quantity' => $item['quantity'],
+            ];
+        }
+
+        return $this->stripe->checkout->sessions->create([
+            'payment_method_types' => ['card'],
+            'line_items'           => $lineItems,
+            'mode'                 => 'payment',
+            'customer_email'       => $user->email,
+            'success_url'          => $successUrl . '?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url'           => $cancelUrl,
+            'metadata'             => [
+                'user_id'  => $user->id,
+                'order_id' => $orderId,
+            ],
+        ]);
     }
 
     public function encryptData($data)

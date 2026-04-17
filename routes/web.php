@@ -347,4 +347,78 @@ Route::controller(\App\Http\Controllers\User\ScheduleClassController::class)->mi
     Route::get('user/schedule-classes/{id}', 'show')->name('user.schedule-session-detail');
 });
 
+// Admin: Subscriptions
+Route::controller(\App\Http\Controllers\Admin\AdminSubscriptionController::class)->middleware(['auth', 'Allow:admin'])->prefix('admin')->group(function () {
+    Route::get('subscriptions', 'index')->name('admin.subscription.index');
+    Route::post('subscriptions/{id}/cancel', 'cancel')->name('admin.subscription.cancel');
+});
+
+// User: Subscriptions
+Route::controller(\App\Http\Controllers\User\SubscriptionController::class)->middleware(['auth', 'profile.complete', 'Allow:user'])->group(function () {
+    Route::get('user/subscriptions', 'index')->name('user.subscription.list');
+    Route::get('user/subscription/checkout/{id}', 'checkout')->name('user.subscription.checkout');
+    Route::post('user/subscription/process/{id}', 'processCheckout')->name('user.subscription.process');
+    Route::get('user/subscription/success', 'success')->name('user.subscription.success');
+    Route::post('user/subscription/{id}/cancel', 'cancel')->name('user.subscription.cancel');
+});
+
+// =============================================
+// E-Commerce: Admin Categories & Brands
+// =============================================
+Route::controller(\App\Http\Controllers\Admin\ProductAttributeController::class)->middleware(['auth', 'Allow:admin'])->prefix('admin')->group(function () {
+    Route::get('product-attributes', 'index')->name('admin.product-attributes.index');
+    Route::post('product-attributes/store', 'store')->name('admin.product-attributes.store');
+    Route::post('product-attributes/{id}/update', 'update')->name('admin.product-attributes.update');
+    Route::get('product-attributes/{id}/delete', 'destroy')->name('admin.product-attributes.delete');
+});
+
+// =============================================
+// E-Commerce: Admin Products
+// =============================================
+Route::controller(\App\Http\Controllers\Admin\ProductController::class)->middleware(['auth', 'Allow:admin'])->prefix('admin')->group(function () {
+    Route::get('products', 'index')->name('admin.products.index');
+    Route::get('products/create', 'create')->name('admin.products.create');
+    Route::post('products/store', 'store')->name('admin.products.store');
+    Route::get('products/{id}/edit', 'edit')->name('admin.products.edit');
+    Route::post('products/{id}/update', 'update')->name('admin.products.update');
+    Route::get('products/{id}/delete', 'destroy')->name('admin.products.delete');
+    Route::delete('product-image/{id}', 'deleteImage')->name('admin.product-image.delete');
+});
+
+// =============================================
+// E-Commerce: Admin Orders
+// =============================================
+Route::controller(\App\Http\Controllers\Admin\OrderController::class)->middleware(['auth', 'Allow:admin'])->prefix('admin')->group(function () {
+    Route::get('orders', 'index')->name('admin.orders.index');
+    Route::get('orders/{id}', 'show')->name('admin.orders.show');
+    Route::post('orders/{id}/status', 'updateStatus')->name('admin.orders.updateStatus');
+});
+
+// =============================================
+// E-Commerce: User Shop & Checkout
+// =============================================
+Route::controller(\App\Http\Controllers\ShopController::class)->middleware(['auth', 'profile.complete'])->group(function () {
+    Route::get('shop', 'index')->name('shop.index');
+    Route::get('shop/checkout', 'checkout')->name('shop.checkout');
+    Route::post('shop/place-order', 'placeOrder')->name('shop.placeOrder');
+    Route::get('shop/stripe/success', 'stripeSuccess')->name('shop.stripe.success');
+    Route::get('shop/stripe/cancel', 'stripeCancel')->name('shop.stripe.cancel');
+    Route::get('shop/order-success/{id}', 'orderSuccess')->name('shop.order.success');
+    Route::get('shop/my-orders', 'myOrders')->name('user.orders');
+    Route::get('shop/my-orders/{id}', 'myOrderDetails')->name('user.order.details');
+    Route::get('shop/my-orders/{id}/pay', 'payOrder')->name('user.order.pay');
+    Route::get('shop/{slug}', 'show')->name('shop.show');
+});
+
+// =============================================
+// E-Commerce: Cart AJAX Routes
+// =============================================
+Route::middleware(['auth'])->group(function () {
+    Route::post('cart/add', [\App\Http\Controllers\ShopController::class, 'addToCart'])->name('cart.add');
+    Route::post('cart/remove', [\App\Http\Controllers\ShopController::class, 'removeFromCart'])->name('cart.remove');
+    Route::post('cart/update', [\App\Http\Controllers\ShopController::class, 'updateCartQty'])->name('cart.update');
+    Route::get('cart/data', [\App\Http\Controllers\ShopController::class, 'getCartData'])->name('cart.data');
+});
+
+
 require __DIR__.'/auth.php';

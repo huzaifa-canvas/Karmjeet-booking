@@ -8,7 +8,7 @@
 </script>
 
     @include('components.base.head')
-    @yield('style')
+   
 
     <body class="vertical-layout vertical-menu-modern  navbar-floating footer-static @auth login @endauth @if (navActive(['class','subjects','courses','course-detail', 'hours-list', 'hours-details']) == 'active') menu-collapsed @endif" data-open="click" data-menu="vertical-menu-modern" data-col="">
         @include('components.base.menu')

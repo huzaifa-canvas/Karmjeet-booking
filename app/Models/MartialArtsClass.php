@@ -23,6 +23,9 @@ class MartialArtsClass extends Model
         'instructor',
         'price',
         'status',
+        'stripe_product_id',
+        'stripe_price_id',
+        'stripe_security_price_id',
     ];
 
     protected $casts = [
@@ -81,4 +84,8 @@ class MartialArtsClass extends Model
     public const FORMATS = [
         'Gi', 'No-Gi', 'Striking', 'Grappling', 'Mixed'
     ];
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class, 'martial_arts_class_id');
+    }
 }

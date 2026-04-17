@@ -74,3 +74,72 @@
         readURL(this);
     });
 </script>
+
+{{-- Global Cart JS for header dropdown --}}
+<script>
+    function updateHeaderCart(cartData, cartCount) {
+        // Update badge count
+        $('.cart-item-count').text(cartCount);
+        $('.cart-header-count').text(cartCount + ' Items');
+
+        // Update total
+        if (cartData && cartData.total !== undefined) {
+            $('#header-cart-total').text('$' + cartData.total.toFixed(2));
+        }
+
+        // Render items
+        var container = $('#header-cart-items');
+        container.empty();
+
+        if (!cartData || !cartData.items || cartData.items.length === 0) {
+            container.html('<div class="text-center py-2 text-muted">Your cart is empty</div>');
+            return;
+        }
+
+        cartData.items.forEach(function(item) {
+            var imgSrc = item.image || '{{ asset("app-assets/images/pages/eCommerce/1.png") }}';
+            var html = '<div class="list-item align-items-center">' +
+                '<img class="d-block rounded me-1" src="' + imgSrc + '" alt="' + item.name + '" width="62">' +
+                '<div class="list-item-body flex-grow-1">' +
+                '<i class="ficon cart-item-remove cursor-pointer" data-feather="x" onclick="headerRemoveFromCart(' + item.id + ')"></i>' +
+                '<div class="media-heading">' +
+                '<h6 class="cart-item-title"><a class="text-body" href="/shop/' + item.slug + '">' + item.name + '</a></h6>' +
+                '</div>' +
+                '<span>Qty: ' + item.quantity + '</span>' +
+                '<h5 class="cart-item-price">$' + parseFloat(item.price).toFixed(2) + '</h5>' +
+                '</div></div>';
+            container.append(html);
+        });
+
+        // Re-render feather icons for the new X buttons
+        if (typeof feather !== 'undefined') {
+            feather.replace({ width: 14, height: 14 });
+        }
+    }
+
+    function headerRemoveFromCart(productId) {
+        $.ajax({
+            url: '{{ route("cart.remove") }}',
+            method: 'POST',
+            data: { product_id: productId, _token: '{{ csrf_token() }}' },
+            success: function(res) {
+                if (res.success) {
+                    updateHeaderCart(res.cartData, res.cartCount);
+                }
+            }
+        });
+    }
+
+    // Load cart on every page load
+    $(document).ready(function() {
+        $.ajax({
+            url: '{{ route("cart.data") }}',
+            method: 'GET',
+            success: function(res) {
+                if (res.success) {
+                    updateHeaderCart(res.cartData, res.cartCount);
+                }
+            }
+        });
+    });
+</script>

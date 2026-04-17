@@ -136,6 +136,27 @@
                         <li class="dropdown-menu-footer"><a class="btn btn-primary w-100" href="#">Read all notifications</a></li>
                     </ul>
                 </li> --}}
+
+                 <li class="nav-item dropdown dropdown-cart me-25"><a class="nav-link" href="#" data-bs-toggle="dropdown"><i class="ficon" data-feather="shopping-cart"></i><span class="badge rounded-pill bg-primary badge-up cart-item-count">0</span></a>
+                    <ul class="dropdown-menu dropdown-menu-media dropdown-menu-end">
+                        <li class="dropdown-menu-header">
+                            <div class="dropdown-header d-flex">
+                                <h4 class="notification-title mb-0 me-auto">My Cart</h4>
+                                <div class="badge rounded-pill badge-light-primary cart-header-count">0 Items</div>
+                            </div>
+                        </li>
+                        <li class="scrollable-container media-list" id="header-cart-items">
+                            <div class="text-center py-2 text-muted" id="empty-cart-msg">Your cart is empty</div>
+                        </li>
+                        <li class="dropdown-menu-footer">
+                            <div class="d-flex justify-content-between mb-1">
+                                <h6 class="fw-bolder mb-0">Total:</h6>
+                                <h6 class="text-primary fw-bolder mb-0" id="header-cart-total">$0.00</h6>
+                            </div><a class="btn btn-primary w-100" href="{{ route('shop.checkout') }}">Checkout</a>
+                        </li>
+                    </ul>
+                </li>
+                
                 <li class="nav-item dropdown dropdown-user"><a class="nav-link dropdown-toggle dropdown-user-link" id="dropdown-user" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div class="user-nav d-sm-flex d-none">
                             <span class="user-name fw-bolder">{{ auth()->user()->name }}</span>
@@ -297,6 +318,44 @@
                                 </a>
                             </li>
                         </ul>
+                    </li>
+
+                    <li class="nav-item {{ navActive(['admin.subscription.index']) }}">
+                        <a class="d-flex align-items-center" href="{{ route('admin.subscription.index') }}">
+                            <i data-feather='credit-card'></i>
+                            <span class="menu-title text-truncate" data-i18n="Manage Subscriptions">Manage Subscriptions</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item {{ navActive(['admin.product-attributes.index']) }}">
+                        <a class="d-flex align-items-center" href="{{ route('admin.product-attributes.index') }}">
+                            <i data-feather='tag'></i>
+                            <span class="menu-title text-truncate" data-i18n="Categories & Brands">Categories & Brands</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item"><a class="d-flex align-items-center" href="#">
+                        <i data-feather='shopping-bag'></i>
+                        <span class="menu-title text-truncate" data-i18n="Products">Products</span></a>
+                        <ul class="menu-content">
+                            <li class="{{ navActive(['admin.products.index']) }}">
+                                <a class="d-flex align-items-center" href="{{ route('admin.products.index') }}">
+                                    <i data-feather="circle"></i><span class="menu-item text-truncate" data-i18n="List">List</span>
+                                </a>
+                            </li>
+                            <li class="{{ navActive(['admin.products.create']) }}">
+                                <a class="d-flex align-items-center" href="{{ route('admin.products.create') }}">
+                                    <i data-feather="circle"></i><span class="menu-item text-truncate" data-i18n="Add">Add New</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item {{ navActive(['admin.orders.index', 'admin.orders.show']) }}">
+                        <a class="d-flex align-items-center" href="{{ route('admin.orders.index') }}">
+                            <i data-feather='package'></i>
+                            <span class="menu-title text-truncate" data-i18n="Orders">Orders</span>
+                        </a>
                     </li>
 
                     {{-- <li class="nav-item"><a class="d-flex align-items-center" href="#">
@@ -739,6 +798,27 @@
                         <a class="d-flex align-items-center" href="{{ route('user.schedule-session-list') }}">
                             <i data-feather='layout'></i>
                             <span class="menu-title text-truncate" data-i18n="Schedule Classes">Schedule Classes</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item {{ navActive(['user.subscription.list']) }}">
+                        <a class="d-flex align-items-center" href="{{ route('user.subscription.list') }}">
+                            <i data-feather='credit-card'></i>
+                            <span class="menu-title text-truncate" data-i18n="My Subscriptions">My Subscriptions</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item {{ navActive(['shop.index', 'shop.show', 'shop.checkout']) }}">
+                        <a class="d-flex align-items-center" href="{{ route('shop.index') }}">
+                            <i data-feather='shopping-cart'></i>
+                            <span class="menu-title text-truncate" data-i18n="Shop">Shop</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item {{ navActive(['user.orders', 'user.order.details']) }}">
+                        <a class="d-flex align-items-center" href="{{ route('user.orders') }}">
+                            <i data-feather='package'></i>
+                            <span class="menu-title text-truncate" data-i18n="My Orders">My Orders</span>
                         </a>
                     </li>
 

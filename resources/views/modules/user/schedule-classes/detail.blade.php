@@ -228,7 +228,7 @@
                         
                         <p class="text-muted mb-3">Ready to join this class? Click below to proceed with secure booking and payment.</p>
                         
-                        <a href="javascript:void(0)" class="btn btn-subscribe" onclick="alert('Proceed to Stripe payment (Coming Soon!)')">
+                        <a href="{{ route('user.subscription.checkout', $class->id) }}" class="btn btn-subscribe">
                             <i data-feather="check-circle" class="me-50"></i> Subscribe / Book
                         </a>
                         <small class="text-muted mt-2 d-block"><i data-feather="shield" class="me-25 font-small-2"></i> Secure payment via Stripe</small>
