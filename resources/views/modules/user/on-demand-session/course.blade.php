@@ -204,7 +204,7 @@
                                     <a href="{{ route('course-detail', $course?->slug) }}">{{ $course?->title }}</a>
                                 </div> --}}
                                 <p class="card-text item-description mt-1">
-                                    {{substr($course?->description, 0, 100) . '...'; }}
+                                    {{ substr($course?->description, 0, 100) . '...' }}
                                 </p>
                                 {{-- <div class="d-flex align-items-start">
                                     <div class="avatar me-2">

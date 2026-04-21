@@ -11,6 +11,9 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'guest_name',
+        'guest_email',
+        'guest_phone',
         'order_number',
         'total_amount',
         'status',
@@ -52,6 +55,36 @@ class Order extends Model
     public function shippingAddress()
     {
         return $this->hasOne(ShippingAddress::class);
+    }
+
+    /**
+     * Check if this is a guest order (from WordPress plugin).
+     */
+    public function getIsGuestAttribute()
+    {
+        return is_null($this->user_id);
+    }
+
+    /**
+     * Get customer display name (registered user or guest).
+     */
+    public function getCustomerNameAttribute()
+    {
+        if ($this->is_guest) {
+            return $this->guest_name ?? 'Guest';
+        }
+        return $this->user->name ?? 'N/A';
+    }
+
+    /**
+     * Get customer email (registered user or guest).
+     */
+    public function getCustomerEmailAttribute()
+    {
+        if ($this->is_guest) {
+            return $this->guest_email ?? '';
+        }
+        return $this->user->email ?? '';
     }
 
     /**

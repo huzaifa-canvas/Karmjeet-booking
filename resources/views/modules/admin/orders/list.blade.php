@@ -74,7 +74,14 @@
                                 @forelse($orders as $order)
                                     <tr>
                                         <td><span class="fw-bold">{{ $order->order_number }}</span></td>
-                                        <td>{{ $order->user->name ?? 'N/A' }}</td>
+                                        <td>
+                                            @if($order->is_guest)
+                                                {{ $order->guest_name }}
+                                                <div class="mt-25"><span class="badge bg-light-info">Guest</span></div>
+                                            @else
+                                                {{ $order->user->name ?? 'N/A' }}
+                                            @endif
+                                        </td>
                                         <td><span class="badge bg-light-primary">{{ $order->items->count() }} items</span></td>
                                         <td><span class="fw-bold text-success">${{ number_format($order->total_amount, 2) }}</span></td>
                                         <td>

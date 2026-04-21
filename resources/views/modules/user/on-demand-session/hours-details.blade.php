@@ -452,8 +452,8 @@
 
                         <div class="col-md-9 col-12">
                             <div class="mb-1">
-                                <div class="remain float-end"><h4>Remaining Hours: <span>{{ $session?->plan_hours; }}</span></h4></div>
-                                <div class="avail"><h4>Available Hours: <span>{{ $session?->plan_hours; }}</span></h4></div>
+                                <div class="remain float-end"><h4>Remaining Hours: <span>{{ $session?->plan_hours }}</span></h4></div>
+                                <div class="avail"><h4>Available Hours: <span>{{ $session?->plan_hours }}</span></h4></div>
                             </div>
                         </div>
 
@@ -652,7 +652,7 @@
         var sessionId   =   "{{ $session?->id }}"
         var slug   =   "{{ $session?->id }}";
         var duration   =   {{ $session?->duration }};
-        var remain   =   {{ $session?->plan_hours; }};
+        var remain   =   {{ $session?->plan_hours }};
         var date = "";
 
         $(document).on( 'change', '#teachers', function(e){

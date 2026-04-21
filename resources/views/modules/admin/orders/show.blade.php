@@ -100,11 +100,22 @@
                     <div class="col-md-4">
                         {{-- Customer Info --}}
                         <div class="card">
-                            <div class="card-header"><h4 class="card-title">Customer</h4></div>
+                            <div class="card-header">
+                                <h4 class="card-title">Customer</h4>
+                                @if($order->is_guest)
+                                    <span class="badge bg-light-info">Guest Order</span>
+                                @endif
+                            </div>
                             <div class="card-body">
-                                <p class="mb-25"><strong>{{ $order->user->name ?? 'N/A' }}</strong></p>
-                                <p class="mb-25">{{ $order->user->email ?? '' }}</p>
-                                <p class="mb-0">{{ $order->user->phone ?? '' }}</p>
+                                @if($order->is_guest)
+                                    <p class="mb-25"><strong>{{ $order->guest_name }}</strong></p>
+                                    <p class="mb-25">{{ $order->guest_email }}</p>
+                                    <p class="mb-0">{{ $order->guest_phone }}</p>
+                                @else
+                                    <p class="mb-25"><strong>{{ $order->user->name ?? 'N/A' }}</strong></p>
+                                    <p class="mb-25">{{ $order->user->email ?? '' }}</p>
+                                    <p class="mb-0">{{ $order->user->phone ?? '' }}</p>
+                                @endif
                             </div>
                         </div>
 
