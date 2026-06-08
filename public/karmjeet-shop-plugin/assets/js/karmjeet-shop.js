@@ -53,8 +53,10 @@ const Cart = {
     count() { return this.get().reduce((sum, i) => sum + i.quantity, 0); },
     clear() { localStorage.removeItem(this.KEY); this.updateBadge(); },
     updateBadge() {
-        let c = this.count();
-        $('.kjs-cart-badge').text(c).toggle(c > 0);
+        const count = this.get().reduce((sum, item) => sum + item.quantity, 0);
+        $('.kjs-cart-count').text(count);
+        $('.kjs-cart-count-global').text(count); // Update the menu cart badge
+        $('.kjs-cart-badge').text(count).toggle(count > 0);
     }
 };
 

@@ -27,33 +27,36 @@
             <div class="content-body">
 
                 {{-- Filter Card --}}
-                <div class="card">
-                    <div class="card-body py-1">
-                        <form method="GET" action="{{ route('admin.products.index') }}" class="row g-1 align-items-end">
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold small">Search</label>
-                                <input type="text" name="search" class="form-control form-control-sm" placeholder="Product name..." value="{{ request('search') }}">
+                <div class="card mb-3 border-0 shadow-sm">
+                    <div class="card-body">
+                        <form method="GET" action="{{ route('admin.products.index') }}" class="row g-3 align-items-end">
+                            <div class="col-md-4 col-lg-3">
+                                <label class="form-label fw-bold text-uppercase small text-muted" style="letter-spacing: 0.5px;">Search Product</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i data-feather="search" style="width: 16px; height: 16px; color: #a1a5b7;"></i></span>
+                                    <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Type product name..." value="{{ request('search') }}">
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold small">Category</label>
-                                <select name="category" class="form-select form-select-sm">
-                                    <option value="">All</option>
+                            <div class="col-md-3 col-lg-3">
+                                <label class="form-label fw-bold text-uppercase small text-muted" style="letter-spacing: 0.5px;">Category</label>
+                                <select name="category" class="form-select">
+                                    <option value="">All Categories</option>
                                     @foreach($categories as $cat)
                                         <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>{{ $cat }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-2">
-                                <label class="form-label fw-bold small">Status</label>
-                                <select name="status" class="form-select form-select-sm">
-                                    <option value="">All</option>
+                            <div class="col-md-3 col-lg-3">
+                                <label class="form-label fw-bold text-uppercase small text-muted" style="letter-spacing: 0.5px;">Status</label>
+                                <select name="status" class="form-select">
+                                    <option value="">All Status</option>
                                     <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
                                     <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
                                 </select>
                             </div>
-                            <div class="col-md-2 d-flex gap-1">
-                                <button type="submit" class="btn btn-primary btn-sm flex-grow-1"><i data-feather='filter'></i> Filter</button>
-                                <a href="{{ route('admin.products.index') }}" class="btn btn-outline-secondary btn-sm"><i data-feather='x'></i></a>
+                            <div class="col-md-2 col-lg-3 d-flex gap-2">
+                                <button type="submit" class="btn btn-primary flex-grow-1 text-nowrap"><i data-feather='filter'></i> Filter</button>
+                                <a href="{{ route('admin.products.index') }}" class="btn btn-light px-3 border" data-bs-toggle="tooltip" title="Clear Filters"><i data-feather='x'></i></a>
                             </div>
                         </form>
                     </div>
@@ -136,8 +139,8 @@
                         </table>
                     </div>
                     @if($products->hasPages())
-                        <div class="card-footer">
-                            {{ $products->appends(request()->query())->links() }}
+                        <div class="card-footer d-flex justify-content-end py-3 border-top">
+                            {{ $products->appends(request()->query())->links('pagination::bootstrap-5') }}
                         </div>
                     @endif
                 </div>

@@ -165,6 +165,37 @@ add_shortcode('karmjeet_order_success', function () {
 });
 
 /**
+ * ── Cart Icon Shortcode ───────────────────────────────────
+ */
+add_shortcode('karmjeet_cart_icon', 'kjs_shortcode_cart_icon');
+function kjs_shortcode_cart_icon() {
+    $cart_url = site_url('/cart'); // Fallback if no specific page found, you can modify it via JS anyway
+    // Try to find the cart page URL dynamically
+    global $wpdb;
+    $cart_page_id = $wpdb->get_var("SELECT ID FROM {$wpdb->posts} WHERE post_content LIKE '%[karmjeet_cart]%' AND post_status='publish' AND post_type='page' LIMIT 1");
+    if ($cart_page_id) {
+        $cart_url = get_permalink($cart_page_id);
+    }
+    
+    return '<a href="' . esc_url($cart_url) . '" class="kjs-menu-cart">
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        <span class="kjs-cart-badge kjs-cart-count-global">0</span>
+    </a>';
+}
+
+/**
+ * ── Append Cart to Nav Menu ───────────────────────────────
+ */
+// add_filter('wp_nav_menu_items', 'kjs_add_cart_to_menu', 10, 2);
+// function kjs_add_cart_to_menu($items, $args) {
+//     // Optional: Only add to primary menu (uncomment and change 'primary' if needed)
+//     // if ($args->theme_location == 'primary') {
+//         $items .= '<li class="menu-item kjs-menu-item-cart">' . kjs_shortcode_cart_icon() . '</li>';
+//     // }
+//     return $items;
+// }
+
+/**
  * ── Stripe.js (only on checkout page) ─────────────────────
  */
 add_action('wp_enqueue_scripts', function () {
