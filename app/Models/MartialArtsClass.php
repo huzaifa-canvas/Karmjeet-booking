@@ -21,15 +21,25 @@ class MartialArtsClass extends Model
         'age_group',
         'format',
         'instructor',
+        'room',
         'price',
+        'is_tax_inclusive',
         'status',
         'stripe_product_id',
         'stripe_price_id',
-        'stripe_security_price_id',
+        'show_drop_in_options',
+        'unlimited_price',
+        'day_pass_price',
+        'weekly_pass_price',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'unlimited_price' => 'decimal:2',
+        'day_pass_price' => 'decimal:2',
+        'weekly_pass_price' => 'decimal:2',
+        'is_tax_inclusive' => 'boolean',
+        'show_drop_in_options' => 'boolean',
     ];
 
     // Filter scopes
@@ -78,7 +88,7 @@ class MartialArtsClass extends Model
     ];
 
     public const AGE_GROUPS = [
-        '5-6', '7-9', '10-15', 'Adults', 'All Ages'
+        '5-8', '9-11', '12-16', '5-6', '7-9', '10-15', 'Adults', 'All Ages'
     ];
 
     public const FORMATS = [
@@ -87,5 +97,10 @@ class MartialArtsClass extends Model
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class, 'martial_arts_class_id');
+    }
+
+    public function pricingPlans()
+    {
+        return $this->hasMany(PricingPlan::class, 'martial_arts_class_id');
     }
 }

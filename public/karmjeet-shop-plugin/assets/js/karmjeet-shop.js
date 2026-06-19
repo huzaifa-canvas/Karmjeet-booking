@@ -6,6 +6,7 @@
 'use strict';
 
 const API = KJS_CONFIG.api_url;
+const IMGPATH = KJS_CONFIG.image_path;
 const API_KEY = KJS_CONFIG.api_key;
 const PAGES = KJS_CONFIG.pages;
 let stripeKey = null;
@@ -155,7 +156,6 @@ window.kjsInitShop = function() {
                 let price = p.sale_price || p.price;
                 let hasDiscount = p.sale_price && parseFloat(p.sale_price) < parseFloat(p.price);
                 let productUrl = PAGES.product + (PAGES.product.indexOf('?') > -1 ? '&' : '?') + 'slug=' + p.slug;
-
                 html += '<div class="kjs-product-card">';
                 html += '<a href="'+productUrl+'" class="kjs-product-img">';
                 if (hasDiscount) html += '<span class="kjs-sale-tag">SALE</span>';
@@ -173,7 +173,7 @@ window.kjsInitShop = function() {
                 html += '<div class="kjs-product-actions">';
                 html += '<a href="'+productUrl+'" class="kjs-btn kjs-btn-outline kjs-btn-sm">Details</a>';
                 if (p.stock > 0) {
-                    html += '<button class="kjs-btn kjs-btn-primary kjs-btn-sm kjs-add-cart" data-product=\''+JSON.stringify({id:p.id,name:p.name,price:p.price,sale_price:p.sale_price,image_url:p.image_url,slug:p.slug})+'\'>🛒 Add</button>';
+                    html += '<button class="kjs-btn kjs-btn-primary kjs-btn-sm kjs-add-cart" data-product=\''+JSON.stringify({id:p.id,name:p.name,price:p.price,sale_price:p.sale_price,image_url:p.image_url,slug:p.slug})+'\'> <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg> Add</button>';
                 } else {
                     html += '<button class="kjs-btn kjs-btn-sm disabled">Out of Stock</button>';
                 }
@@ -216,14 +216,14 @@ window.kjsInitProductDetail = function() {
         let price = p.sale_price || p.price;
         let hasDiscount = p.sale_price && parseFloat(p.sale_price) < parseFloat(p.price);
         let images = p.all_images && p.all_images.length ? p.all_images : (p.image_url ? [p.image_url] : []);
-
+		
         let html = '<div class="kjs-detail-layout">';
         // Gallery
         html += '<div class="kjs-gallery">';
-        html += '<div class="kjs-gallery-main"><img id="kjs-main-img" src="'+(images[0]||'')+'" alt="'+p.name+'"></div>';
+        html += '<div class="kjs-gallery-main"><img id="kjs-main-img" src="'+(p.image_url||'')+'" alt="'+p.name+'"></div>';
         if (images.length > 1) {
             html += '<div class="kjs-gallery-thumbs">';
-            images.forEach((img, idx) => { html += '<img src="'+img+'" class="kjs-thumb '+(idx===0?'active':'')+'" onclick="kjsSetMainImg(this, \''+img+'\')">'; });
+            images.forEach((img, idx) => { html += '<img src="'+IMGPATH+'/'+img+'" class="kjs-thumb '+(idx===0?'active':'')+'" onclick="kjsSetMainImg(this, \''+IMGPATH+'/'+img+'\')">'; });
             html += '</div>';
         }
         html += '</div>';
@@ -242,7 +242,7 @@ window.kjsInitProductDetail = function() {
         if (p.description) html += '<div class="kjs-detail-desc">'+p.description+'</div>';
         if (p.stock > 0) {
             html += '<div class="kjs-qty-selector"><button onclick="kjsQty(-1)">−</button><input type="number" id="kjs-detail-qty" value="1" min="1" max="'+p.stock+'"><button onclick="kjsQty(1)">+</button></div>';
-            html += '<button class="kjs-btn kjs-btn-primary kjs-btn-lg" id="kjs-detail-add" data-product=\''+JSON.stringify({id:p.id,name:p.name,price:p.price,sale_price:p.sale_price,image_url:p.image_url,slug:p.slug})+'\'>🛒 Add to Cart</button>';
+            html += '<button class="kjs-btn kjs-btn-primary kjs-btn-lg" id="kjs-detail-add" data-product=\''+JSON.stringify({id:p.id,name:p.name,price:p.price,sale_price:p.sale_price,image_url:p.image_url,slug:p.slug})+'\'><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg> Add to Cart</button>';
         }
         html += '</div></div>';
 
@@ -343,6 +343,10 @@ window.kjsInitCheckout = function() {
     $.get(API + '/config', function(res) {
         if (res.success && res.stripe_key) {
             stripeKey = res.stripe_key;
+            // Auto-init Stripe if card payment is pre-selected
+            if ($('input[name="kjs_payment"]:checked').val() === 'stripe') {
+                initStripeElements();
+            }
         }
     });
 
@@ -397,7 +401,7 @@ window.kjsInitCheckout = function() {
         stripeInstance = Stripe(stripeKey);
         stripeElements = stripeInstance.elements();
         cardElement = stripeElements.create('card', {
-            style: { base: { fontSize: '16px', fontFamily: 'Inter, sans-serif', color: '#4b4b4b', '::placeholder': { color: '#82868b' } } }
+            style: { base: { fontSize: '16px', fontFamily: 'Inter, sans-serif', color: '#ffffff', '::placeholder': { color: '#82868b' } } }
         });
         cardElement.mount('#kjs-stripe-element');
         cardElement.on('change', function(e) {

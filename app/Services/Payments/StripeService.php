@@ -32,7 +32,7 @@ class StripeService
         return $customer;
     }
 
-    public function createCheckoutSession($user, $class, $successUrl, $cancelUrl)
+    public function createCheckoutSession($user, $class, $totalAmount, $successUrl, $cancelUrl, $discountCoupon = null, $package_type = 'normal')
     {
         // 1. Ensure Product exists
         if (!$class->stripe_product_id) {
@@ -40,76 +40,104 @@ class StripeService
             $class->update(['stripe_product_id' => $product->id]);
         }
 
-        $unitAmount = (int)($class->price * 100);
+        $unitAmount = (int)(round($totalAmount, 2) * 100);
 
-        // 2. Get or Create Recurring Price
-        $recurringPriceId = $class->stripe_price_id;
-        if ($recurringPriceId) {
-            try {
-                $stripePrice = $this->stripe->prices->retrieve($recurringPriceId);
-                if ($stripePrice->unit_amount !== $unitAmount) {
-                    $recurringPriceId = null; // Price changed, need new one
-                }
-            } catch (\Exception $e) {
-                $recurringPriceId = null;
-            }
-        }
+        // Check plan interval
+        $isOneTime = ($package_type === 'day_pass' || $package_type === 'weekly_pass');
 
-        if (!$recurringPriceId) {
+        // 2. Handle Price ID (Recurring vs One-time)
+        $priceId = null;
+
+        if ($isOneTime) {
+            // For one-time payments, we can just create a price on the fly or use line_item.price_data
+            $sessionData = [
+                'payment_method_types' => ['card'],
+                'line_items' => [
+                    [
+                        'price_data' => [
+                            'currency' => 'usd',
+                            'unit_amount' => $unitAmount,
+                            'product' => $class->stripe_product_id,
+                        ],
+                        'quantity' => 1,
+                    ],
+                ],
+                'mode' => 'payment',
+                'customer_email' => $user->email,
+                'success_url' => $successUrl . '?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => $cancelUrl,
+                'metadata' => [
+                    'user_id' => $user->id,
+                    'martial_arts_class_id' => $class->id,
+                    'package_type' => $package_type,
+                    'is_one_time' => 'true'
+                ],
+            ];
+        } else {
+            // Recurring Subscriptions
+            $interval = 'month';
+            
             $newPrice = $this->stripe->prices->create([
                 'currency' => 'usd',
                 'unit_amount' => $unitAmount,
-                'recurring' => ['interval' => 'month'],
+                'recurring' => ['interval' => $interval],
                 'product' => $class->stripe_product_id,
             ]);
             $recurringPriceId = $newPrice->id;
-            $class->update(['stripe_price_id' => $recurringPriceId]);
+
+            $sessionData = [
+                'payment_method_types' => ['card'],
+                'line_items' => [
+                    [
+                        'price' => $recurringPriceId,
+                        'quantity' => 1,
+                    ],
+                ],
+                'mode' => 'subscription',
+                'customer_email' => $user->email,
+                'success_url' => $successUrl . '?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => $cancelUrl,
+                'metadata' => [
+                    'user_id' => $user->id,
+                    'martial_arts_class_id' => $class->id,
+                    'package_type' => $package_type,
+                ],
+            ];
         }
 
-        // 3. Get or Create Security Deposit Price (One-time)
-        $securityPriceId = $class->stripe_security_price_id;
-        if ($securityPriceId) {
+        // Apply Discount Coupon if provided
+        if ($discountCoupon && $discountCoupon->isValid()) {
             try {
-                $stripePrice = $this->stripe->prices->retrieve($securityPriceId);
-                if ($stripePrice->unit_amount !== $unitAmount) {
-                    $securityPriceId = null;
+                // Check if coupon exists in Stripe by code
+                $stripeCouponId = 'COUPON_' . $discountCoupon->id;
+                try {
+                    $this->stripe->coupons->retrieve($stripeCouponId);
+                } catch (\Exception $e) {
+                    // Create coupon in Stripe
+                    $couponData = [
+                        'id' => $stripeCouponId,
+                        'name' => $discountCoupon->name ?: $discountCoupon->code,
+                        'duration' => 'forever',
+                    ];
+                    if ($discountCoupon->type === 'percentage') {
+                        $couponData['percent_off'] = $discountCoupon->value;
+                    } else {
+                        $couponData['amount_off'] = (int)($discountCoupon->value * 100);
+                        $couponData['currency'] = 'usd';
+                    }
+                    $this->stripe->coupons->create($couponData);
                 }
+
+                $sessionData['discounts'] = [
+                    ['coupon' => $stripeCouponId],
+                ];
             } catch (\Exception $e) {
-                $securityPriceId = null;
+                // Proceed without discount if Stripe fails
+                \Log::error('Stripe Coupon Error: ' . $e->getMessage());
             }
         }
 
-        if (!$securityPriceId) {
-            $newPrice = $this->stripe->prices->create([
-                'currency' => 'usd',
-                'unit_amount' => $unitAmount,
-                'product' => $class->stripe_product_id,
-            ]);
-            $securityPriceId = $newPrice->id;
-            $class->update(['stripe_security_price_id' => $securityPriceId]);
-        }
-
-        return $this->stripe->checkout->sessions->create([
-            'payment_method_types' => ['card'],
-            'line_items' => [
-                [
-                    'price' => $recurringPriceId,
-                    'quantity' => 1,
-                ],
-                [
-                    'price' => $securityPriceId,
-                    'quantity' => 1,
-                ],
-            ],
-            'mode' => 'subscription',
-            'customer_email' => $user->email,
-            'success_url' => $successUrl . '?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url' => $cancelUrl,
-            'metadata' => [
-                'user_id' => $user->id,
-                'martial_arts_class_id' => $class->id,
-            ],
-        ]);
+        return $this->stripe->checkout->sessions->create($sessionData);
     }
 
     public function getCheckoutSession($sessionId)

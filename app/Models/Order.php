@@ -16,6 +16,12 @@ class Order extends Model
         'guest_phone',
         'order_number',
         'total_amount',
+        'subtotal',
+        'gst_amount',
+        'pst_amount',
+        'tax_amount',
+        'discount_coupon_code',
+        'discount_amount',
         'status',
         'payment_method',
         'payment_status',
@@ -26,6 +32,11 @@ class Order extends Model
 
     protected $casts = [
         'total_amount' => 'decimal:2',
+        'subtotal' => 'decimal:2',
+        'gst_amount' => 'decimal:2',
+        'pst_amount' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
     ];
 
     /**

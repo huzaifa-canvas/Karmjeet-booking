@@ -75,7 +75,6 @@
                     <div class="card checkout-card">
                         <!-- Upper Detail Section -->
                         <div class="class-header">
-                            <img src="{{ asset($class->image ?: 'assets/images/no-preview.png') }}" class="class-img" alt="{{ $class->name }}">
                             <h2 class="fw-bolder mb-0 text-dark">{{ $class->name }}</h2>
                             <p class="text-muted small mb-0">{{ $class->category }} Plan • Premium Level</p>
                         </div>
@@ -93,35 +92,109 @@
                                         <small class="text-muted font-small-2">Subscription fee</small>
                                     </div>
                                 </div>
-                                <span class="fw-bolder text-dark h5 mb-0">${{ number_format($class->price, 2) }}</span>
                             </div>
-
-                            <div class="price-item">
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar bg-light-secondary me-75">
-                                        <div class="avatar-content"><i data-feather="shield" class="font-medium-3 text-primary"></i></div>
-                                    </div>
-                                    <div>
-                                        <span class="d-block fw-bold text-dark">Security Deposit</span>
-                                        <small class="text-muted font-small-2">Refundable/Advance</small>
-                                    </div>
+                            
+                            <div class="price-item py-1">
+                                <div class="d-flex justify-content-between w-100">
+                                    <span class="text-muted">Subtotal</span>
+                                    <span class="fw-bold" id="subtotal_display">${{ number_format($taxDetails['subtotal'], 2) }}</span>
                                 </div>
-                                <span class="fw-bolder text-dark h5 mb-0">${{ number_format($class->price, 2) }}</span>
                             </div>
+                            
+                            @if($taxDetails['gst_rate'] > 0)
+                            <div class="price-item py-1 border-0">
+                                <div class="d-flex justify-content-between w-100">
+                                    <span class="text-muted">GST ({{ $taxDetails['gst_rate'] }}%)</span>
+                                    <span class="fw-bold" id="gst_display">${{ number_format($taxDetails['gst_amount'], 2) }}</span>
+                                </div>
+                            </div>
+                            @endif
+
+                            @if($taxDetails['pst_rate'] > 0)
+                            <div class="price-item py-1 border-0">
+                                <div class="d-flex justify-content-between w-100">
+                                    <span class="text-muted">PST ({{ $taxDetails['pst_rate'] }}%)</span>
+                                    <span class="fw-bold" id="pst_display">${{ number_format($taxDetails['pst_amount'], 2) }}</span>
+                                </div>
+                            </div>
+                            @endif
 
                             <div class="total-section">
                                 <div class="d-flex justify-content-between align-items-center mb-50">
                                     <span class="h5 mb-0 text-muted">Amount Due Today</span>
-                                    <span class="h2 mb-0 fw-bolder text-primary">${{ number_format($class->price * 2, 2) }}</span>
+                                    <span class="h2 mb-0 fw-bolder text-primary" id="total_display">${{ number_format($taxDetails['total'], 2) }}</span>
                                 </div>
                                 <div class="d-flex align-items-center mt-1">
                                     <i data-feather="alert-circle" class="text-primary me-50" style="width: 14px;"></i>
-                                    <small class="text-muted">Next payment will be charged automatically in 1 month.</small>
+                                    <small class="text-muted">
+                                        @if(request('package_type') == 'day_pass' || request('package_type') == 'weekly_pass')
+                                            This is a one-time payment. No automatic renewal.
+                                        @else
+                                            Next payment will be charged automatically every month.
+                                        @endif
+                                        @if($taxDetails['is_inclusive']) (Prices are Tax Inclusive) @endif
+                                    </small>
                                 </div>
                             </div>
 
-                            <form action="{{ route('user.subscription.process', $class->id) }}" method="POST">
+                            @if(session('status') == 'failed')
+                                <div class="alert alert-danger p-1 mt-1 mb-1">
+                                    {{ session('message') }}
+                                </div>
+                            @endif
+
+                            <form action="{{ route('user.subscription.process', $class->id) }}" method="POST" id="checkoutForm">
                                 @csrf
+                                
+                                @if(request('package_type') == 'day_pass' || request('package_type') == 'weekly_pass')
+                                    <input type="hidden" name="package_type" value="{{ request('package_type') }}">
+                                    <div class="alert alert-info mt-2">
+                                        You are purchasing a <strong>{{ request('package_type') == 'day_pass' ? 'Day Pass' : 'Weekly Pass' }}</strong>.
+                                    </div>
+                                @else
+                                    @if($class->unlimited_price)
+                                        <div class="mt-2 mb-2 p-2 border rounded" style="background-color: #f8f8f8;">
+                                            <h5 class="fw-bolder mb-1">Select Your Package</h5>
+                                            
+                                            <div class="form-check mb-1">
+                                                <input class="form-check-input package-selector" type="radio" name="package_type" id="pkg_normal" value="normal" 
+                                                       data-price="{{ $taxDetails['total'] }}"
+                                                       data-subtotal="{{ $taxDetails['subtotal'] }}"
+                                                       data-gst="{{ $taxDetails['gst_amount'] }}"
+                                                       data-pst="{{ $taxDetails['pst_amount'] }}"
+                                                       checked>
+                                                <label class="form-check-label fw-bold" for="pkg_normal">
+                                                    Standard Package (${{ number_format($class->price, 2) }}/mo)
+                                                </label>
+                                            </div>
+                                            
+                                            <div class="form-check">
+                                                <input class="form-check-input package-selector" type="radio" name="package_type" id="pkg_unlimited" value="unlimited" 
+                                                       data-price="{{ $taxDetails['unlimited_total'] }}"
+                                                       data-subtotal="{{ $taxDetails['unlimited_subtotal'] }}"
+                                                       data-gst="{{ $taxDetails['unlimited_gst_amount'] }}"
+                                                       data-pst="{{ $taxDetails['unlimited_pst_amount'] }}">
+                                                <label class="form-check-label fw-bold text-primary" for="pkg_unlimited">
+                                                    Unlimited Package (${{ number_format($class->unlimited_price, 2) }}/mo)
+                                                </label>
+                                                <div class="badge bg-light-danger text-danger mt-50 d-block text-start w-100 text-wrap" style="line-height:1.4;">
+                                                    🔥 Unbelievable Offer: Additional classes available for only ${{ number_format($class->unlimited_price - $class->price, 2) }} extra!
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <input type="hidden" name="package_type" value="normal">
+                                    @endif
+                                @endif
+                                
+                                <div class="mb-2 mt-2">
+                                    <label class="form-label fw-bold text-muted font-small-3">Have a discount coupon?</label>
+                                    <div class="input-group">
+                                        <input type="text" name="coupon_code" class="form-control" placeholder="Enter coupon code">
+                                    </div>
+                                    <small class="text-muted font-small-2">Discount will be applied on the Stripe payment page.</small>
+                                </div>
+
                                 <button type="submit" class="btn btn-primary w-100 btn-pay shadow-sm mb-1">
                                     Confirm and Pay Securely
                                 </button>
@@ -147,5 +220,32 @@
 @section('scripts')
 <script>
     if (typeof feather !== 'undefined') { feather.replace(); }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const radios = document.querySelectorAll('.package-selector');
+        const totalDisplay = document.getElementById('total_display');
+        const subtotalDisplay = document.getElementById('subtotal_display');
+        const gstDisplay = document.getElementById('gst_display');
+        const pstDisplay = document.getElementById('pst_display');
+        
+        radios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.checked) {
+                    const newTotal = parseFloat(this.getAttribute('data-price')).toFixed(2);
+                    totalDisplay.innerText = '$' + newTotal;
+                    
+                    if (subtotalDisplay) {
+                        subtotalDisplay.innerText = '$' + parseFloat(this.getAttribute('data-subtotal')).toFixed(2);
+                    }
+                    if (gstDisplay) {
+                        gstDisplay.innerText = '$' + parseFloat(this.getAttribute('data-gst')).toFixed(2);
+                    }
+                    if (pstDisplay) {
+                        pstDisplay.innerText = '$' + parseFloat(this.getAttribute('data-pst')).toFixed(2);
+                    }
+                }
+            });
+        });
+    });
 </script>
 @endsection

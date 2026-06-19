@@ -233,14 +233,32 @@
         <div class="main-menu-content">
             <ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation">
 
+                @if (auth()->check() && auth()->user()->user_role != 'admin')
                 <li class="nav-item {{ navActive(['dashboard']) }}">
                     <a class="d-flex align-items-center" href="{{ route('dashboard') }}">
                         <i data-feather='home'></i>
                         <span class="menu-title text-truncate" data-i18n="Dashboards">Dashboard</span>
                     </a>
                 </li>
+                @endif
 
                 @if (auth()->user()->user_role == "admin")
+
+                <li class="navigation-header"><span data-i18n="Reports & Analytics">Reports & Analytics</span><i data-feather="more-horizontal"></i></li>
+                
+                <li class="{{ request()->routeIs('admin.reports.financial') || request()->routeIs('dashboard') ? 'active' : '' }} nav-item">
+                    <a class="d-flex align-items-center" href="{{ route('admin.reports.financial') }}">
+                        <i data-feather="pie-chart"></i>
+                        <span class="menu-title text-truncate" data-i18n="Financial">Financial Reports</span>
+                    </a>
+                </li>
+
+                <li class="{{ request()->routeIs('admin.reports.members') ? 'active' : '' }} nav-item">
+                    <a class="d-flex align-items-center" href="{{ route('admin.reports.members') }}">
+                        <i data-feather="users"></i>
+                        <span class="menu-title text-truncate" data-i18n="Members">Member Statistics</span>
+                    </a>
+                </li>
 
                     <li class="nav-item {{ navActive(['user-edit']) }}">
                         <a class="d-flex align-items-center" href="#">
@@ -359,6 +377,31 @@
                             <span class="menu-title text-truncate" data-i18n="Orders">Orders</span>
                         </a>
                     </li>
+
+                    <li class="{{ request()->routeIs('admin.discount-coupons.*') ? 'active' : '' }} nav-item">
+                    <a class="d-flex align-items-center" href="{{ route('admin.discount-coupons.index') }}">
+                        <i data-feather="tag"></i>
+                        <span class="menu-title text-truncate" data-i18n="Discount Coupons">Discount Coupons</span>
+                    </a>
+                </li>
+                
+                <li class="{{ request()->routeIs('admin.cancellation-requests.*') ? 'active' : '' }} nav-item">
+                    <a class="d-flex align-items-center" href="{{ route('admin.cancellation-requests.index') }}">
+                        <i data-feather="user-minus"></i>
+                        <span class="menu-title text-truncate" data-i18n="Cancellations">Cancellation Requests</span>
+                    </a>
+                </li>
+
+                <li class="navigation-header"><span data-i18n="Settings">Settings</span><i data-feather="more-horizontal"></i></li>
+                
+                <li class="{{ navActive(['site-setting']) }} nav-item">
+                    <a class="d-flex align-items-center" href="{{ route('site-setting') }}">
+                        <i data-feather="settings"></i>
+                        <span class="menu-title text-truncate" data-i18n="Site Settings">Site Settings (GST/PST)</span>
+                    </a>
+                </li>
+
+
 
                     {{-- <li class="nav-item"><a class="d-flex align-items-center" href="#">
                         <i data-feather='airplay'></i>

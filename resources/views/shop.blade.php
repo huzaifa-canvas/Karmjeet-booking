@@ -8,6 +8,13 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('/') }}app-assets/css/pages/app-ecommerce.css">
     <link rel="stylesheet" type="text/css" href="{{ asset('/') }}app-assets/css/plugins/extensions/ext-component-toastr.css">
     <!-- END: Page CSS-->
+
+    <style>
+        .ecommerce-application .grid-view .ecommerce-card .item-img {
+            height: 270px;
+            overflow: hidden;
+        }
+    </style>
 @endsection
 @section('content')
 

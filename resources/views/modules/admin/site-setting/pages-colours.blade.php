@@ -42,25 +42,22 @@
                                         @csrf
                                         <div class="row">
 
-                                            @foreach ($pages as $key => $page)
-                                            @php
-                                               $data = (isset($settingData[$page])) ? $settingData[$page]->pluck('value','key')->toArray() : [];
-                                            @endphp
-                                                {{-- <input type="hidden" name="page[]" readonly value="{{ $page }}"> --}}
-                                                <div class="col-md-3  col-12 color-picker">
-                                                    <div class="mb-1 row">
-                                                        <h3 class="col-12">{{ $key }}</h3>
-                                                        <div class="col-6">
-                                                            <label class="form-label" for="first-title-vertical" >Primary Color</label>
-                                                            <input type="color" required id="first-title-vertical" class="form-control" value="{{ $data['primary_colour'] ?? "#006D5B" }}" name="{{ $page }}[primary_colour]" placeholder="title" />
-                                                        </div>
-                                                        <div class="col-6">
-                                                            <label class="form-label" for="first-title-vertical" >Secondary color</label>
-                                                            <input type="color" required id="first-title-vertical" class="form-control" value="{{ $data['secondary_colour'] ?? "#191970" }}" name="{{ $page }}[secondary_colour]" placeholder="title" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @endforeach
+                                            {{-- Tax Settings --}}
+                                            <div class="col-12 mb-2">
+                                                <h3 class="border-bottom pb-1">Tax Settings</h3>
+                                            </div>
+                                            <div class="col-md-6 col-12 mb-3">
+                                                <label class="form-label fw-bold">GST Percentage (%)</label>
+                                                @php $gstVal = isset($settingData['tax']) ? $settingData['tax']->where('key', 'gst_percentage')->first()->value ?? '' : ''; @endphp
+                                                <input type="number" step="0.01" class="form-control" name="tax[gst_percentage]" value="{{ $gstVal }}" placeholder="e.g. 5">
+                                            </div>
+                                            <div class="col-md-6 col-12 mb-3">
+                                                <label class="form-label fw-bold">PST Percentage (%)</label>
+                                                @php $pstVal = isset($settingData['tax']) ? $settingData['tax']->where('key', 'pst_percentage')->first()->value ?? '' : ''; @endphp
+                                                <input type="number" step="0.01" class="form-control" name="tax[pst_percentage]" value="{{ $pstVal }}" placeholder="e.g. 7">
+                                            </div>
+
+
 
 
 

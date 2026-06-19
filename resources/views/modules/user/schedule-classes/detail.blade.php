@@ -218,20 +218,56 @@
                     </div>
                 </div>
 
-                <!-- Right Column: Subscription -->
+                <!-- Right Column: Subscription & Passes -->
                 <div class="col-lg-4 mb-2">
-                    <div class="detail-card d-flex flex-column text-center">
-                        <h5 class="text-muted mb-1 mt-2">Membership Fee</h5>
-                        <div class="price-tag">${{ number_format($class->price ?? 0, 2) }} <span style="font-size:1rem;color:#6e6b7b;font-weight:600;">/ period</span></div>
-                        
-                        <hr class="w-100 my-2">
-                        
-                        <p class="text-muted mb-3">Ready to join this class? Click below to proceed with secure booking and payment.</p>
-                        
-                        <a href="{{ route('user.subscription.checkout', $class->id) }}" class="btn btn-subscribe">
-                            <i data-feather="check-circle" class="me-50"></i> Subscribe / Book
+                    <div class="detail-card d-flex flex-column text-center p-2 mb-2">
+                        <h4 class="mb-2"><i data-feather="credit-card" class="me-50 text-primary"></i> Membership</h4>
+                        <h5 class="text-muted mb-1 mt-1">Standard Plan</h5>
+                        <div class="price-tag mb-1" style="font-size: 2.2rem;">
+                            ${{ number_format($class->price ?? 0, 2) }} 
+                            <span style="font-size:1rem;color:#6e6b7b;font-weight:600;">/ mo</span>
+                        </div>
+
+                        <!-- Drop-in / Weekly Passes -->
+                        @if($class->day_pass_price || $class->weekly_pass_price)
+                            <hr class="w-100 mt-1 mb-1" style="opacity: 0.1;">
+                            <div class="d-flex flex-column text-start w-100 mb-1 px-1">
+                                <h6 class="text-muted fw-bold mb-1 font-small-3 text-center">Flexible Options</h6>
+                                
+                                @if($class->day_pass_price)
+                                <div class="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom">
+                                    <div>
+                                        <span class="d-block fw-bolder text-dark">Day Pass</span>
+                                        <span class="text-primary fw-bold font-medium-1">${{ number_format($class->day_pass_price, 2) }}</span>
+                                    </div>
+                                    <a href="{{ route('user.subscription.checkout', ['id' => $class->id, 'package_type' => 'day_pass']) }}" class="btn btn-sm btn-outline-primary" style="padding: 0.4rem 0.8rem;">
+                                        Buy Now
+                                    </a>
+                                </div>
+                                @endif
+
+                                @if($class->weekly_pass_price)
+                                <div class="d-flex justify-content-between align-items-center mb-50">
+                                    <div>
+                                        <span class="d-block fw-bolder text-dark">Weekly Pass</span>
+                                        <span class="text-primary fw-bold font-medium-1">${{ number_format($class->weekly_pass_price, 2) }}</span>
+                                    </div>
+                                    <a href="{{ route('user.subscription.checkout', ['id' => $class->id, 'package_type' => 'weekly_pass']) }}" class="btn btn-sm btn-outline-primary" style="padding: 0.4rem 0.8rem;">
+                                        Buy Now
+                                    </a>
+                                </div>
+                                @endif
+                            </div>
+                            <hr class="w-100 mt-50 mb-2" style="opacity: 0.1;">
+                        @endif
+
+                        <p class="text-muted mb-2 font-small-3">Ready to join this class? Click below to proceed with secure booking and payment.</p>
+                        <a href="{{ route('user.subscription.checkout', $class->id) }}" class="btn btn-subscribe py-1 w-100 shadow-sm">
+                            <i data-feather="check-circle" class="me-50"></i> Subscribe to Standard Plan
                         </a>
-                        <small class="text-muted mt-2 d-block"><i data-feather="shield" class="me-25 font-small-2"></i> Secure payment via Stripe</small>
+                        <div class="text-center mt-1">
+                            <small class="text-muted"><i data-feather="shield" class="me-25 font-small-2"></i> Secure payment via Stripe</small>
+                        </div>
                     </div>
                 </div>
             </div>

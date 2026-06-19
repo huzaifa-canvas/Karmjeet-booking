@@ -101,6 +101,7 @@ add_action('wp_enqueue_scripts', function () {
     // Pass config to JS
     wp_localize_script('kjs-script', 'KJS_CONFIG', [
         'api_url'  => rtrim(get_option('kjs_api_url', 'http://localhost'), '/') . '/api/wp-shop',
+		'image_path'  => rtrim(get_option('kjs_api_url', 'http://localhost'), '/'),
         'api_key'  => get_option('kjs_api_key', ''),
         'site_url' => home_url(),
         'ajax_url' => admin_url('admin-ajax.php'),

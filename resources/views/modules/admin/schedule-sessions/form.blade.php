@@ -60,10 +60,53 @@
                                     <input type="text" name="instructor" class="form-control" value="{{ old('instructor', $class->instructor ?? '') }}" placeholder="e.g. Prof. Chad">
                                 </div>
 
+                                {{-- Room / Gym Area --}}
+                                <div class="col-md-3 mb-1">
+                                    <label class="form-label fw-bold">Room / Gym Area</label>
+                                    <input type="text" name="room" class="form-control" value="{{ old('room', $class->room ?? '') }}" placeholder="e.g. Grappling Gym">
+                                </div>
+                            </div>
+
+                            <div class="row">
                                 {{-- Price --}}
                                 <div class="col-md-3 mb-1">
                                     <label class="form-label fw-bold">Price ($)</label>
                                     <input type="number" step="0.01" name="price" class="form-control" value="{{ old('price', $class->price ?? '') }}" placeholder="0.00">
+                                </div>
+
+                                {{-- Tax Inclusive --}}
+                                <div class="col-md-3 mb-1 mt-2">
+                                    <div class="form-check form-switch mt-1">
+                                        <input type="hidden" name="is_tax_inclusive" value="0">
+                                        <input type="checkbox" class="form-check-input" id="is_tax_inclusive" name="is_tax_inclusive" value="1" {{ old('is_tax_inclusive', $class->is_tax_inclusive ?? false) ? 'checked' : '' }}>
+                                        <label class="form-check-label fw-bold" for="is_tax_inclusive">Price is Tax Inclusive?</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 mb-1">
+                                    <hr>
+                                    <h5 class="fw-bolder">Additional Pricing Options</h5>
+                                    <small class="text-muted">Leave blank if you do not want to offer these options.</small>
+                                </div>
+                                {{-- Unlimited Price --}}
+                                <div class="col-md-3 mb-1">
+                                    <label class="form-label fw-bold">Unlimited Price ($)</label>
+                                    <input type="number" step="0.01" name="unlimited_price" class="form-control" value="{{ old('unlimited_price', $class->unlimited_price ?? '') }}" placeholder="e.g. 200.00">
+                                    <small class="text-muted">Offers the $50 extra promotion at checkout.</small>
+                                </div>
+
+                                {{-- Day Pass Price --}}
+                                <div class="col-md-3 mb-1">
+                                    <label class="form-label fw-bold">Day Pass Price ($)</label>
+                                    <input type="number" step="0.01" name="day_pass_price" class="form-control" value="{{ old('day_pass_price', $class->day_pass_price ?? '') }}" placeholder="e.g. 40.00">
+                                </div>
+
+                                {{-- Weekly Pass Price --}}
+                                <div class="col-md-3 mb-1">
+                                    <label class="form-label fw-bold">Weekly Pass Price ($)</label>
+                                    <input type="number" step="0.01" name="weekly_pass_price" class="form-control" value="{{ old('weekly_pass_price', $class->weekly_pass_price ?? '') }}" placeholder="e.g. 100.00">
                                 </div>
                             </div>
 

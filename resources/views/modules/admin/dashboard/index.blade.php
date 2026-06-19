@@ -104,6 +104,50 @@
                                                     </div>
                                                 </div>
                                             </div> --}}
+                                            </div>
+                                            
+                                            <!-- Additional Member Stats -->
+                                            <div class="col-xl-4 col-sm-6 col-12 mt-2">
+                                                <div class="d-flex flex-row">
+                                                    <div class="avatar bg-light-success me-2">
+                                                        <div class="avatar-content">
+                                                            <i data-feather="check-circle" class="avatar-icon"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div class="my-auto">
+                                                        <h4 class="fw-bolder mb-0">{{ $activeSubscriptions }}</h4>
+                                                        <p class="card-text font-small-3 mb-0">Active Subs</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-xl-4 col-sm-6 col-12 mt-2">
+                                                <div class="d-flex flex-row">
+                                                    <div class="avatar bg-light-danger me-2">
+                                                        <div class="avatar-content">
+                                                            <i data-feather="x-circle" class="avatar-icon"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div class="my-auto">
+                                                        <h4 class="fw-bolder mb-0">{{ $canceledSubscriptions }}</h4>
+                                                        <p class="card-text font-small-3 mb-0">Canceled Subs</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-xl-4 col-sm-6 col-12 mt-2">
+                                                <div class="d-flex flex-row">
+                                                    <div class="avatar bg-light-warning me-2">
+                                                        <div class="avatar-content">
+                                                            <i data-feather="trending-down" class="avatar-icon"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div class="my-auto">
+                                                        <h4 class="fw-bolder mb-0">{{ number_format($churnRate, 1) }}%</h4>
+                                                        <p class="card-text font-small-3 mb-0">Churn Rate</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- End Additional Member Stats -->
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -188,6 +232,51 @@
                             </div>
                             <!--/ Revenue Report Card -->
                         </div>
+
+                        <!-- Recent Transactions -->
+                        <div class="row match-height">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header border-bottom">
+                                        <h4 class="card-title">Recent Financial Transactions</h4>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Type</th>
+                                                    <th>Customer</th>
+                                                    <th>Item/Order</th>
+                                                    <th>Amount</th>
+                                                    <th>Invoice</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse($recentTransactions as $tx)
+                                                <tr>
+                                                    <td>{{ $tx->date->format('M d, Y') }}</td>
+                                                    <td><span class="badge rounded-pill badge-light-{{ $tx->type == 'Subscription' ? 'primary' : 'success' }}">{{ $tx->type }}</span></td>
+                                                    <td>{{ $tx->user_name }}</td>
+                                                    <td>{{ $tx->item }}</td>
+                                                    <td class="fw-bold">${{ number_format($tx->amount, 2) }}</td>
+                                                    <td>
+                                                        <a href="{{ $tx->invoice_url }}" target="_blank" class="btn btn-sm btn-outline-primary">View</a>
+                                                    </td>
+                                                </tr>
+                                                @empty
+                                                <tr>
+                                                    <td colspan="6" class="text-center p-3">No recent transactions found.</td>
+                                                </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--/ Recent Transactions -->
+
                     </section>
 
                 @endif

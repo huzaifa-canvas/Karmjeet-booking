@@ -24,15 +24,19 @@ class ScheduleClassController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        // We can paginate to make it better for the user, or just get all for now
-        $classes = $query->orderBy('name')->paginate(12);
+        $classes = $query->orderBy('name')->get();
+        
+        // Group by room for the timetable view
+        $groupedRooms = $classes->groupBy(function($class) {
+            return empty($class->room) ? 'Main Gym Area' : $class->room;
+        });
 
         $categories = MartialArtsClass::CATEGORIES;
         $types = MartialArtsClass::TYPES;
         $levels = MartialArtsClass::LEVELS;
         $age_groups = MartialArtsClass::AGE_GROUPS;
 
-        return view('modules.user.schedule-classes.list', compact('classes', 'categories', 'types', 'levels', 'age_groups'));
+        return view('modules.user.schedule-classes.list', compact('classes', 'groupedRooms', 'categories', 'types', 'levels', 'age_groups'));
     }
 
     public function show($id)

@@ -9,6 +9,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "*",
         "coconutcraig/laravel-postmark": "^3.0",
         "gussrw/laravel-routes": "^1.1",
         "guzzlehttp/guzzle": "^7.2",

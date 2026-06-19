@@ -24,36 +24,7 @@ class HomeController extends Controller
 
         $user = Auth::user();
         if($user->user_role == "admin"){
-            $user = User::where('user_role','user')->count();
-            $teacher = User::where('user_role','coach')->count();
-            $ondemand = ScheduleSession::count();
-            $blog = Blog::count();
-            $poadcast = Poadcast::count();
-            $session = Coaching::count();
-            $sessionBooking = SessionBooking::count();
-            $totalearning = SessionBooking::sum('price_per_session');
-            // $totalearning = SessionBooking::where('payment_status','success')->sum('price_per_session');
-
-            $bookingCountPerMonth = SessionBooking::all()->groupBy(function($val) {
-                return Carbon::parse($val->created_at)->format('YM');
-            });
-
-            $montsName = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            $currentYear = date('Y');
-
-            foreach ($montsName as $key => $value) {
-            $bookingChartData[] = (isset($bookingCountPerMonth[$currentYear.$value]) ? $bookingCountPerMonth[$currentYear.$value]->count() : 0);
-            $revenueChatData[] = (isset($bookingCountPerMonth[$currentYear.$value]) ? $bookingCountPerMonth[$currentYear.$value]->sum('price_per_session') : 0);
-            }
-
-            // $curentMonthEarning = SessionBooking::where('payment_status','success')->whereMonth('created_at', Carbon::now()->month)->get()->sum('price_per_session');
-            // $lastMonthEarning = SessionBooking::where('payment_status','success')->whereMonth('created_at', Carbon::now()->subMonth()->month)->get()->sum('price_per_session');
-            $curentMonthEarning = SessionBooking::whereMonth('created_at', Carbon::now()->month)->get()->sum('price_per_session');
-            $lastMonthEarning = SessionBooking::whereMonth('created_at', Carbon::now()->subMonth()->month)->get()->sum('price_per_session');
-
-
-            // dd($lastMonthEarning);
-            return view('modules.admin.dashboard.index',compact('user', 'teacher', 'ondemand', 'poadcast', 'session', 'sessionBooking', 'totalearning', 'bookingChartData', 'revenueChatData', 'curentMonthEarning', 'lastMonthEarning'));
+            return redirect()->route('admin.reports.financial');
         }
 
         if($user->user_role == "coach"){

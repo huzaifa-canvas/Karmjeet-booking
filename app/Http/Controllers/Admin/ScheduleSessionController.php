@@ -51,9 +51,17 @@ class ScheduleSessionController extends Controller
             'age_group'   => 'nullable|string',
             'format'      => 'nullable|string',
             'instructor'  => 'nullable|string|max:255',
+            'room'        => 'nullable|string|max:255',
             'price'       => 'nullable|numeric|min:0',
+            'unlimited_price'=> 'nullable|numeric|min:0',
+            'day_pass_price'=> 'nullable|numeric|min:0',
+            'weekly_pass_price'=> 'nullable|numeric|min:0',
+            'is_tax_inclusive'=> 'nullable|boolean',
+            'show_drop_in_options'=> 'nullable|boolean',
             'status'      => 'required|in:active,inactive',
         ]);
+
+        $validated['show_drop_in_options'] = $request->has('show_drop_in_options');
 
         try {
             // Handle image upload
@@ -92,9 +100,17 @@ class ScheduleSessionController extends Controller
             'age_group'   => 'nullable|string',
             'format'      => 'nullable|string',
             'instructor'  => 'nullable|string|max:255',
+            'room'        => 'nullable|string|max:255',
             'price'       => 'nullable|numeric|min:0',
+            'unlimited_price'=> 'nullable|numeric|min:0',
+            'day_pass_price'=> 'nullable|numeric|min:0',
+            'weekly_pass_price'=> 'nullable|numeric|min:0',
+            'is_tax_inclusive'=> 'nullable|boolean',
+            'show_drop_in_options'=> 'nullable|boolean',
             'status'      => 'required|in:active,inactive',
         ]);
+
+        $validated['show_drop_in_options'] = $request->has('show_drop_in_options');
 
         try {
             // Handle image upload

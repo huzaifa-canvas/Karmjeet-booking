@@ -65,7 +65,8 @@
                             <tr>
                                 <th>User</th>
                                 <th>Schedule</th>
-                                <th>Monthly Price</th>
+                                <th>Package</th>
+                                <th>Price</th>
                                 <th>Status</th>
                                 <th>Next Payment</th>
                                 <th>Actions</th>
@@ -90,7 +91,18 @@
                                     @endif
                                 </td>
                                 <td>{{ $sub->martialArtsClass->name ?? 'N/A' }}</td>
-                                <td>${{ number_format($sub->martialArtsClass->price, 2) }}</td>
+                                <td>
+                                    @if($sub->package_type === 'unlimited')
+                                        <span class="badge bg-primary">Unlimited</span>
+                                    @elseif($sub->package_type === 'day_pass')
+                                        <span class="badge bg-info">Day Pass</span>
+                                    @elseif($sub->package_type === 'weekly_pass')
+                                        <span class="badge bg-info">Weekly Pass</span>
+                                    @else
+                                        <span class="badge bg-secondary">Standard</span>
+                                    @endif
+                                </td>
+                                <td>${{ number_format($sub->price, 2) }}</td>
                                 <td>
                                     <span class="status-badge bg-light-{{ $sub->status == 'active' ? 'success' : 'secondary' }} text-{{ $sub->status == 'active' ? 'success' : 'secondary' }}">
                                         {{ $sub->status }}
@@ -105,7 +117,7 @@
                                         </a>
                                     @endif
 
-                                    @if($sub->status == 'active')
+                                    @if($sub->status == 'active' && !in_array($sub->package_type, ['day_pass', 'weekly_pass']))
                                     <form action="{{ route('admin.subscription.cancel', $sub->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Arre you sure you want to cancel this subscription?')">
                                         @csrf
                                         <button type="submit" class="btn btn-sm btn-icon btn-neutral" title="Cancel Subscription">

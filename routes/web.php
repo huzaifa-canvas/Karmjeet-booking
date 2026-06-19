@@ -341,16 +341,48 @@ Route::controller(\App\Http\Controllers\Admin\ScheduleSessionController::class)-
     Route::get('schedule-session/{id}/delete', 'destroy')->name('schedule-session-delete');
 });
 
+// Admin: Pricing Plans
+Route::controller(\App\Http\Controllers\Admin\PricingPlanController::class)->middleware(['auth', 'Allow:admin'])->prefix('admin')->group(function () {
+    Route::get('pricing-plans', 'index')->name('admin.pricing-plans.index');
+    Route::get('pricing-plans/create', 'create')->name('admin.pricing-plans.create');
+    Route::post('pricing-plans/store', 'store')->name('admin.pricing-plans.store');
+    Route::get('pricing-plans/{id}/edit', 'edit')->name('admin.pricing-plans.edit');
+    Route::post('pricing-plans/{id}/update', 'update')->name('admin.pricing-plans.update');
+    Route::get('pricing-plans/{id}/delete', 'destroy')->name('admin.pricing-plans.delete');
+});
+
+// Admin: Discount Coupons
+Route::controller(\App\Http\Controllers\Admin\DiscountCouponController::class)->middleware(['auth', 'Allow:admin'])->prefix('admin')->name('admin.discount-coupons.')->group(function () {
+    Route::get('discount-coupons', 'index')->name('index');
+    Route::get('discount-coupons/create', 'create')->name('create');
+    Route::post('discount-coupons/store', 'store')->name('store');
+    Route::get('discount-coupons/{id}/edit', 'edit')->name('edit');
+    Route::post('discount-coupons/{id}/update', 'update')->name('update');
+    Route::get('discount-coupons/{id}/delete', 'destroy')->name('delete');
+});
+
 // User: Schedule Sessions
 Route::controller(\App\Http\Controllers\User\ScheduleClassController::class)->middleware(['auth', 'profile.complete', 'Allow:user'])->group(function () {
     Route::get('user/schedule-classes', 'index')->name('user.schedule-session-list');
     Route::get('user/schedule-classes/{id}', 'show')->name('user.schedule-session-detail');
 });
 
-// Admin: Subscriptions
+// Admin: Subscriptions & Cancellations
 Route::controller(\App\Http\Controllers\Admin\AdminSubscriptionController::class)->middleware(['auth', 'Allow:admin'])->prefix('admin')->group(function () {
     Route::get('subscriptions', 'index')->name('admin.subscription.index');
     Route::post('subscriptions/{id}/cancel', 'cancel')->name('admin.subscription.cancel');
+});
+
+Route::controller(\App\Http\Controllers\Admin\CancellationRequestController::class)->middleware(['auth', 'Allow:admin'])->prefix('admin')->name('admin.cancellation-requests.')->group(function () {
+    Route::get('cancellation-requests', 'index')->name('index');
+    Route::post('cancellation-requests/{id}/update', 'updateStatus')->name('update');
+});
+
+// Admin: Reports & Analytics
+Route::controller(\App\Http\Controllers\Admin\ReportController::class)->middleware(['auth', 'Allow:admin'])->prefix('admin/reports')->name('admin.reports.')->group(function () {
+    Route::get('financial', 'financial')->name('financial');
+    Route::get('financial/export', 'downloadFinancialCsv')->name('financial.export');
+    Route::get('members', 'members')->name('members');
 });
 
 // User: Subscriptions
@@ -359,6 +391,7 @@ Route::controller(\App\Http\Controllers\User\SubscriptionController::class)->mid
     Route::get('user/subscription/checkout/{id}', 'checkout')->name('user.subscription.checkout');
     Route::post('user/subscription/process/{id}', 'processCheckout')->name('user.subscription.process');
     Route::get('user/subscription/success', 'success')->name('user.subscription.success');
+    Route::get('user/subscription/invoice/{id}', 'downloadInvoice')->name('user.subscription.invoice');
     Route::post('user/subscription/{id}/cancel', 'cancel')->name('user.subscription.cancel');
 });
 

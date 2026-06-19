@@ -142,38 +142,9 @@
                 </div>
             </div>
 
-            <!-- Classes Grid Starts -->
+            <!-- Timetable by Room Starts -->
             <div class="row">
-                @forelse ($classes as $class)
-                    <div class="col-lg-3 col-md-4 col-sm-6 mb-2">
-                        <div class="ecommerce-card1">
-                            <a href="{{ route('user.schedule-session-detail', $class->id) }}">
-                                <div class="class-img-wrapper">
-                                    <img src="{{ asset($class->image ?: 'assets/images/no-preview.png') }}" alt="{{ $class->name }}" />
-                                    <span class="class-badge">{{ $class->category }}</span>
-                                </div>
-                            </a>
-                            <div class="class-details">
-                                <a href="{{ route('user.schedule-session-detail', $class->id) }}">
-                                    <h5 class="class-title">{{ $class->name }}</h5>
-                                </a>
-                                <div class="class-meta">
-                                    <span class="class-level"><i data-feather="bar-chart-2" class="font-small-3 me-25"></i>{{ $class->level }}</span>
-                                    <span class="class-price">${{ number_format($class->price ?? 0, 2) }}</span>
-                                </div>
-                                
-                                <div class="d-flex align-items-center mb-1 mt-auto">
-                                    <i data-feather="clock" class="text-primary font-small-3 me-50"></i>
-                                    <small class="text-muted text-truncate" style="max-width: 90%;">{{ $class->description ? Str::limit(str_replace("\n", ", ", $class->description), 40) : 'Schedule info on details page' }}</small>
-                                </div>
-
-                                <a href="{{ route('user.schedule-session-detail', $class->id) }}" class="btn btn-primary btn-sm w-100 text-center mt-1">
-                                    View Details
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                @empty
+                @if($groupedRooms->isEmpty())
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body text-center py-5">
@@ -182,13 +153,49 @@
                             </div>
                         </div>
                     </div>
-                @endforelse
-            </div>
-            <!-- Classes Grid Ends -->
+                @else
+                    @foreach ($groupedRooms as $room => $roomClasses)
+                        <div class="col-12 mb-3">
+                            <h3 class="fw-bolder text-primary mb-2 border-bottom pb-1">
+                                <i data-feather="map-pin" class="me-50"></i> {{ $room }}
+                            </h3>
+                            <div class="row">
+                                @foreach($roomClasses as $class)
+                                    <div class="col-lg-3 col-md-4 col-sm-6 mb-2">
+                                        <div class="ecommerce-card1">
+                                            <a href="{{ route('user.schedule-session-detail', $class->id) }}">
+                                                <div class="class-img-wrapper">
+                                                    <img src="{{ asset($class->image ?: 'assets/images/no-preview.png') }}" alt="{{ $class->name }}" />
+                                                    <span class="class-badge">{{ $class->category }}</span>
+                                                </div>
+                                            </a>
+                                            <div class="class-details">
+                                                <a href="{{ route('user.schedule-session-detail', $class->id) }}">
+                                                    <h5 class="class-title">{{ $class->name }}</h5>
+                                                </a>
+                                                <div class="class-meta">
+                                                    <span class="class-level"><i data-feather="bar-chart-2" class="font-small-3 me-25"></i>{{ $class->level }}</span>
+                                                    <span class="class-price">${{ number_format($class->price ?? 0, 2) }}</span>
+                                                </div>
+                                                
+                                                <div class="d-flex align-items-center mb-1 mt-auto">
+                                                    <i data-feather="clock" class="text-primary font-small-3 me-50"></i>
+                                                    <small class="text-muted text-truncate" style="max-width: 90%;">{{ $class->description ? Str::limit(str_replace("\n", ", ", $class->description), 40) : 'Schedule info on details page' }}</small>
+                                                </div>
 
-            <div class="d-flex justify-content-center mt-2 mb-4">
-                {{ $classes->withQueryString()->links('pagination::bootstrap-5') }}
+                                                <a href="{{ route('user.schedule-session-detail', $class->id) }}" class="btn btn-primary btn-sm w-100 text-center mt-1">
+                                                    View Details
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
+                @endif
             </div>
+            <!-- Timetable by Room Ends -->
 
         </div>
     </div>
