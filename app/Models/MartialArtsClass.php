@@ -40,6 +40,7 @@ class MartialArtsClass extends Model
         'weekly_pass_price' => 'decimal:2',
         'is_tax_inclusive' => 'boolean',
         'show_drop_in_options' => 'boolean',
+        'room' => 'array',
     ];
 
     // Filter scopes
@@ -71,6 +72,11 @@ class MartialArtsClass extends Model
     public function scopeFilterFormat($query, $format)
     {
         return $format ? $query->where('format', $format) : $query;
+    }
+
+    public function scopeFilterRoom($query, $room)
+    {
+        return $room ? $query->whereJsonContains('room', $room) : $query;
     }
 
     // Constants for filter dropdowns

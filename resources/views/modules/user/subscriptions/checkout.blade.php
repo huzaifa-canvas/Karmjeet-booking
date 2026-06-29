@@ -88,8 +88,16 @@
                                         <div class="avatar-content"><i data-feather="calendar" class="font-medium-3 text-primary"></i></div>
                                     </div>
                                     <div>
-                                        <span class="d-block fw-bold text-dark">First Month</span>
-                                        <small class="text-muted font-small-2">Subscription fee</small>
+                                        @if(request('package_type') == 'day_pass')
+                                            <span class="d-block fw-bold text-dark">Day Pass</span>
+                                            <small class="text-muted font-small-2">One-time pass fee</small>
+                                        @elseif(request('package_type') == 'weekly_pass')
+                                            <span class="d-block fw-bold text-dark">Weekly Pass</span>
+                                            <small class="text-muted font-small-2">One-time pass fee</small>
+                                        @else
+                                            <span class="d-block fw-bold text-dark">First Month</span>
+                                            <small class="text-muted font-small-2">Subscription fee</small>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -177,9 +185,10 @@
                                                 <label class="form-check-label fw-bold text-primary" for="pkg_unlimited">
                                                     Unlimited Package (${{ number_format($class->unlimited_price, 2) }}/mo)
                                                 </label>
-                                                <div class="badge bg-light-danger text-danger mt-50 d-block text-start w-100 text-wrap" style="line-height:1.4;">
-                                                    🔥 Unbelievable Offer: Additional classes available for only ${{ number_format($class->unlimited_price - $class->price, 2) }} extra!
-                                                </div>
+                                            </div>
+                                            <div class="badge bg-light-danger text-danger mt-50 d-block text-start w-100 text-wrap" style="line-height:1.4;">
+                                                {{-- 🔥 Unbelievable Offer: Additional classes available for only ${{ number_format($class->unlimited_price - $class->price, 2) }} extra! --}}
+                                                🔥 Special Discounted Offer: Pay just ${{ number_format($class->unlimited_price - $class->price, 2) }} extra and get 8 classes across two different class genres, plus full access to the gym for 2 hours.
                                             </div>
                                         </div>
                                     @else
@@ -194,6 +203,25 @@
                                     </div>
                                     <small class="text-muted font-small-2">Discount will be applied on the Stripe payment page.</small>
                                 </div>
+
+                                {{-- Location Selection --}}
+                                @if(count($classRooms) > 1)
+                                    <div class="mb-2 p-1 border rounded" style="background-color: #f0f7ff;">
+                                        <label class="form-label fw-bold"><i data-feather="map-pin" style="width:14px;height:14px;"></i> Select Location <span class="text-danger">*</span></label>
+                                        <select name="selected_location" class="form-select" required>
+                                            <option value="">Choose your location...</option>
+                                            @foreach($classRooms as $room)
+                                                <option value="{{ $room }}">{{ $room }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                @elseif(count($classRooms) == 1)
+                                    <input type="hidden" name="selected_location" value="{{ $classRooms[0] }}">
+                                    <div class="mb-2 d-flex align-items-center text-muted">
+                                        <i data-feather="map-pin" style="width:14px;height:14px;" class="me-50"></i>
+                                        <small>Location: <strong>{{ $classRooms[0] }}</strong></small>
+                                    </div>
+                                @endif
 
                                 <button type="submit" class="btn btn-primary w-100 btn-pay shadow-sm mb-1">
                                     Confirm and Pay Securely

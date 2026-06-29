@@ -2,6 +2,8 @@
 @section('title', 'Manage Subscriptions | ' . config('app.name'))
 
 @section('style')
+<link rel="stylesheet" type="text/css" href="{{ asset('app-assets/vendors/css/pickers/flatpickr/flatpickr.min.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ asset('app-assets/css/plugins/forms/pickers/form-flat-pickr.css') }}">
 <style>
     .status-badge {
         padding: 5px 10px;
@@ -24,15 +26,15 @@
         <div class="content-body">
             <!-- Filter Section -->
             <div class="card mb-4">
-                <div class="card-body pt-1">
-                    <form action="{{ route('admin.subscription.index') }}" method="GET" class="row">
-                        <div class="col-md-3 mb-1">
-                            <label class="form-label">Search User</label>
-                            <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="User Name">
+                <div class="card-body pt-1 pb-0">
+                    <form action="{{ route('admin.subscription.index') }}" method="GET" class="row align-items-end mb-1">
+                        <div class="col-md-2 mb-1">
+                            <label class="form-label small fw-bold">Search User</label>
+                            <input type="text" name="search" value="{{ request('search') }}" class="form-control form-control-sm" placeholder="User Name">
                         </div>
-                        <div class="col-md-3 mb-1">
-                            <label class="form-label">Filter by Schedule</label>
-                            <select name="class_id" class="form-select">
+                        <div class="col-md-2 mb-1">
+                            <label class="form-label small fw-bold">Filter by Schedule</label>
+                            <select name="class_id" class="form-select form-select-sm">
                                 <option value="">All Schedules</option>
                                 @foreach($classes as $class)
                                     <option value="{{ $class->id }}" {{ request('class_id') == $class->id ? 'selected' : '' }}>{{ $class->name }}</option>
@@ -40,18 +42,31 @@
                             </select>
                         </div>
                         <div class="col-md-2 mb-1">
-                            <label class="form-label">Status</label>
-                            <select name="status" class="form-select">
+                            <label class="form-label small fw-bold">Date</label>
+                            <input type="text" name="date" class="form-control form-control-sm flatpickr-range bg-white" placeholder="YYYY-MM-DD to YYYY-MM-DD" value="{{ request('date') }}">
+                        </div>
+                        <div class="col-md-2 mb-1">
+                            <label class="form-label small fw-bold">Package</label>
+                            <select name="package" class="form-select form-select-sm">
+                                <option value="">All Packages</option>
+                                <option value="normal" {{ request('package') == 'normal' ? 'selected' : '' }}>Standard</option>
+                                <option value="unlimited" {{ request('package') == 'unlimited' ? 'selected' : '' }}>Unlimited</option>
+                                <option value="day_pass" {{ request('package') == 'day_pass' ? 'selected' : '' }}>Day Pass</option>
+                                <option value="weekly_pass" {{ request('package') == 'weekly_pass' ? 'selected' : '' }}>Weekly Pass</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-1">
+                            <label class="form-label small fw-bold">Status</label>
+                            <select name="status" class="form-select form-select-sm">
                                 <option value="">All Status</option>
                                 <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                                <option value="expired" {{ request('status') == 'expired' ? 'selected' : '' }}>Expired</option>
                                 <option value="canceled" {{ request('status') == 'canceled' ? 'selected' : '' }}>Canceled</option>
                             </select>
                         </div>
-                        <div class="col-md-2 mb-1 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary w-100">Filter</button>
-                        </div>
-                        <div class="col-md-2 mb-1 d-flex align-items-end">
-                            <a href="{{ route('admin.subscription.index') }}" class="btn btn-outline-secondary w-100">Clear</a>
+                        <div class="col-md-2 mb-1 d-flex gap-50">
+                            <button type="submit" class="btn btn-primary btn-sm w-100" title="Filter"><i data-feather="search"></i></button>
+                            <a href="{{ route('admin.subscription.index') }}" class="btn btn-outline-secondary btn-sm w-100" title="Clear Filters" style="padding: 0.386rem 0.5rem;"><i data-feather="x"></i></a>
                         </div>
                     </form>
                 </div>
@@ -90,7 +105,12 @@
                                     <span class="text-muted">N/A</span>
                                     @endif
                                 </td>
-                                <td>{{ $sub->martialArtsClass->name ?? 'N/A' }}</td>
+                                <td>
+                                    {{ $sub->martialArtsClass->name ?? 'N/A' }}
+                                    @if($sub->selected_location)
+                                        <br><small class="text-primary"><i data-feather="map-pin" style="width:11px;height:11px;"></i> {{ $sub->selected_location }}</small>
+                                    @endif
+                                </td>
                                 <td>
                                     @if($sub->package_type === 'unlimited')
                                         <span class="badge bg-primary">Unlimited</span>
@@ -104,11 +124,30 @@
                                 </td>
                                 <td>${{ number_format($sub->price, 2) }}</td>
                                 <td>
-                                    <span class="status-badge bg-light-{{ $sub->status == 'active' ? 'success' : 'secondary' }} text-{{ $sub->status == 'active' ? 'success' : 'secondary' }}">
-                                        {{ $sub->status }}
+                                    <span class="status-badge bg-light-{{ $sub->status == 'active' ? 'success' : ($sub->status == 'expired' ? 'danger' : 'secondary') }} text-{{ $sub->status == 'active' ? 'success' : ($sub->status == 'expired' ? 'danger' : 'secondary') }}">
+                                        {{ ucfirst($sub->status) }}
                                     </span>
                                 </td>
-                                <td>{{ $sub->next_payment_date ? $sub->next_payment_date->format('M d, Y') : 'N/A' }}</td>
+                                <td>
+                                    @if($sub->next_payment_date)
+                                        {{ $sub->next_payment_date->format('M d, Y') }}
+                                    @elseif(in_array($sub->package_type, ['day_pass', 'weekly_pass']))
+                                        @php
+                                            $days = $sub->package_type === 'day_pass' ? 1 : 7;
+                                            $expiresAt = $sub->created_at ? $sub->created_at->copy()->addDays($days) : null;
+                                        @endphp
+                                        @if($expiresAt)
+                                            <div class="d-flex flex-column">
+                                                <span>{{ $expiresAt->format('M d, Y') }}</span>
+                                                <small class="text-{{ $sub->status == 'expired' ? 'danger' : 'success' }}">{{ $sub->status == 'expired' ? 'Expired' : 'Valid Until' }}</small>
+                                            </div>
+                                        @else
+                                            N/A
+                                        @endif
+                                    @else
+                                        N/A
+                                    @endif
+                                </td>
                                 <td>
                                     @php $latestPayment = $sub->payments->first(); @endphp
                                     @if($latestPayment && $latestPayment->stripe_invoice_url)
@@ -145,7 +184,14 @@
 @endsection
 
 @section('scripts')
+<script src="{{ asset('app-assets/vendors/js/pickers/flatpickr/flatpickr.min.js') }}"></script>
 <script>
-    if (typeof feather !== 'undefined') { feather.replace(); }
+    $(document).ready(function() {
+        if (typeof feather !== 'undefined') { feather.replace(); }
+        $('.flatpickr-range').flatpickr({
+            mode: 'range',
+            dateFormat: 'Y-m-d'
+        });
+    });
 </script>
 @endsection

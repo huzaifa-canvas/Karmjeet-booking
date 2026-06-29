@@ -57,6 +57,11 @@
                                             <label class="form-label fw-bold">Price <span class="text-danger">*</span></label>
                                             <input type="number" step="0.01" name="price" class="form-control @error('price') is-invalid @enderror" value="{{ old('price', $product->price ?? '') }}" required>
                                             @error('price')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                            
+                                            <div class="form-check form-switch mt-1">
+                                                <input class="form-check-input" type="checkbox" name="is_tax_inclusive" id="is_tax_inclusive" value="1" {{ old('is_tax_inclusive', $product->is_tax_inclusive ?? false) ? 'checked' : '' }}>
+                                                <label class="form-check-label small fw-bold text-muted" for="is_tax_inclusive">Price is Tax Inclusive?</label>
+                                            </div>
                                         </div>
                                         <div class="col-md-4 mb-1">
                                             <label class="form-label fw-bold">Sale Price</label>

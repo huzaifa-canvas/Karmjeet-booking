@@ -16,6 +16,7 @@ class Product extends Model
         'description',
         'price',
         'sale_price',
+        'is_tax_inclusive',
         'image',
         'category',
         'brand',

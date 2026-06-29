@@ -337,6 +337,11 @@
                                     <i data-feather="circle"></i><span class="menu-item text-truncate" data-i18n="Add">Add New</span>
                                 </a>
                             </li>
+                            <li class="{{ navActive(['admin.class-attributes.index']) }}">
+                                <a class="d-flex align-items-center" href="{{ route('admin.class-attributes.index') }}">
+                                    <i data-feather="circle"></i><span class="menu-item text-truncate" data-i18n="Attributes">Attributes</span>
+                                </a>
+                            </li>
                         </ul>
                     </li>
 

@@ -55,6 +55,7 @@ class ProductController extends Controller
 
         try {
             $validated['featured'] = $request->has('featured') ? 1 : 0;
+            $validated['is_tax_inclusive'] = $request->has('is_tax_inclusive') ? 1 : 0;
             $validated['slug'] = Str::slug($request->name);
 
             // Ensure unique slug
@@ -122,6 +123,7 @@ class ProductController extends Controller
         try {
             $product = Product::findOrFail($id);
             $validated['featured'] = $request->has('featured') ? 1 : 0;
+            $validated['is_tax_inclusive'] = $request->has('is_tax_inclusive') ? 1 : 0;
 
             // Handle main image upload
             if ($request->hasFile('image')) {

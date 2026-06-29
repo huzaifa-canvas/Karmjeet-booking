@@ -193,15 +193,44 @@ class ShopController extends Controller
             return redirect()->route('shop.index')->with(['status' => 'failed', 'message' => 'Your cart is empty.']);
         }
 
+        $gstSetting = \App\Models\SiteSetting::where('key', 'gst_percentage')->first();
+        $pstSetting = \App\Models\SiteSetting::where('key', 'pst_percentage')->first();
+        $gstRate = $gstSetting ? floatval($gstSetting->value) : 0;
+        $pstRate = $pstSetting ? floatval($pstSetting->value) : 0;
+        $totalTaxRate = ($gstRate + $pstRate) / 100;
+
+        $cartSubtotal = 0;
+        $cartGstAmount = 0;
+        $cartPstAmount = 0;
         $cartTotal = 0;
-        $products = Product::whereIn('id', array_keys($cart))->get()->keyBy('id');
+
+        $products = \App\Models\Product::whereIn('id', array_keys($cart))->get()->keyBy('id');
 
         foreach ($cart as $id => &$item) {
-            $cartTotal += $item['price'] * $item['quantity'];
-            $item['brand'] = $products[$id]->brand ?? 'Karmjeet';
+            $product = $products[$id];
+            $item['brand'] = $product->brand ?? 'Karmjeet';
+            
+            $itemTotal = $item['price'] * $item['quantity'];
+            
+            if ($product->is_tax_inclusive) {
+                $subtotal = $itemTotal / (1 + $totalTaxRate);
+                $gstAmount = $subtotal * ($gstRate / 100);
+                $pstAmount = $subtotal * ($pstRate / 100);
+                $total = $itemTotal;
+            } else {
+                $subtotal = $itemTotal;
+                $gstAmount = $subtotal * ($gstRate / 100);
+                $pstAmount = $subtotal * ($pstRate / 100);
+                $total = $subtotal + $gstAmount + $pstAmount;
+            }
+
+            $cartSubtotal += $subtotal;
+            $cartGstAmount += $gstAmount;
+            $cartPstAmount += $pstAmount;
+            $cartTotal += $total;
         }
 
-        return view('checkout', compact('cart', 'cartTotal'));
+        return view('checkout', compact('cart', 'cartSubtotal', 'cartGstAmount', 'cartPstAmount', 'cartTotal', 'gstRate', 'pstRate'));
     }
 
     /**
@@ -226,15 +255,48 @@ class ShopController extends Controller
             'payment_method' => 'required|in:cod,stripe',
         ]);
 
+        $gstSetting = \App\Models\SiteSetting::where('key', 'gst_percentage')->first();
+        $pstSetting = \App\Models\SiteSetting::where('key', 'pst_percentage')->first();
+        $gstRate = $gstSetting ? floatval($gstSetting->value) : 0;
+        $pstRate = $pstSetting ? floatval($pstSetting->value) : 0;
+        $totalTaxRate = ($gstRate + $pstRate) / 100;
+
+        $cartSubtotal = 0;
+        $cartGstAmount = 0;
+        $cartPstAmount = 0;
         $cartTotal = 0;
-        foreach ($cart as $item) {
-            $cartTotal += $item['price'] * $item['quantity'];
+        
+        $products = \App\Models\Product::whereIn('id', array_keys($cart))->get()->keyBy('id');
+
+        foreach ($cart as $id => $item) {
+            $product = $products[$id];
+            $itemTotal = $item['price'] * $item['quantity'];
+            
+            if ($product->is_tax_inclusive) {
+                $subtotal = $itemTotal / (1 + $totalTaxRate);
+                $gstAmount = $subtotal * ($gstRate / 100);
+                $pstAmount = $subtotal * ($pstRate / 100);
+                $total = $itemTotal;
+            } else {
+                $subtotal = $itemTotal;
+                $gstAmount = $subtotal * ($gstRate / 100);
+                $pstAmount = $subtotal * ($pstRate / 100);
+                $total = $subtotal + $gstAmount + $pstAmount;
+            }
+
+            $cartSubtotal += $subtotal;
+            $cartGstAmount += $gstAmount;
+            $cartPstAmount += $pstAmount;
+            $cartTotal += $total;
         }
 
         // Create Order
         $order = Order::create([
             'user_id'        => Auth::id(),
-            'total_amount'   => $cartTotal,
+            'total_amount'   => round($cartTotal, 2),
+            'subtotal'       => round($cartSubtotal, 2),
+            'gst_amount'     => round($cartGstAmount, 2),
+            'pst_amount'     => round($cartPstAmount, 2),
             'status'         => 'pending',
             'payment_method' => $request->payment_method,
         ]);
@@ -275,7 +337,9 @@ class ShopController extends Controller
                     $cart,
                     $order->id,
                     route('shop.stripe.success'),
-                    route('shop.stripe.cancel')
+                    route('shop.stripe.cancel'),
+                    round($cartGstAmount, 2),
+                    round($cartPstAmount, 2)
                 );
 
                 $order->update(['stripe_session_id' => $session->id]);
@@ -395,16 +459,72 @@ class ShopController extends Controller
     }
 
     /**
+     * Cancel an unpaid order.
+     */
+    public function cancelOrder($id)
+    {
+        $order = Order::with('items')->where('user_id', Auth::id())->findOrFail($id);
+
+        // Only allow cancelling unpaid orders
+        if ($order->payment_status !== 'unpaid') {
+            return redirect()->back()->with(['status' => 'failed', 'message' => 'Only unpaid orders can be cancelled.']);
+        }
+
+        // Restore stock for each item
+        foreach ($order->items as $item) {
+            Product::where('id', $item->product_id)->increment('stock', $item->quantity);
+        }
+
+        // Delete related records and the order
+        $order->items()->delete();
+        $order->shippingAddress()->delete();
+        $order->delete();
+
+        return redirect()->route('user.orders')->with(['status' => 'success', 'message' => 'Order cancelled successfully.']);
+    }
+
+    /**
      * Helper: Build cart array for JSON response.
      */
     private function getCartArray()
     {
         $cart = session()->get('cart', []);
         $items = [];
-        $total = 0;
+        
+        $gstSetting = \App\Models\SiteSetting::where('key', 'gst_percentage')->first();
+        $pstSetting = \App\Models\SiteSetting::where('key', 'pst_percentage')->first();
+        $gstRate = $gstSetting ? floatval($gstSetting->value) : 0;
+        $pstRate = $pstSetting ? floatval($pstSetting->value) : 0;
+        $totalTaxRate = ($gstRate + $pstRate) / 100;
+
+        $cartSubtotal = 0;
+        $cartGstAmount = 0;
+        $cartPstAmount = 0;
+        $cartTotal = 0;
+        
+        $products = \App\Models\Product::whereIn('id', array_keys($cart))->get()->keyBy('id');
+
         foreach ($cart as $id => $item) {
+            $product = $products[$id];
             $itemTotal = $item['price'] * $item['quantity'];
-            $total += $itemTotal;
+            
+            if ($product->is_tax_inclusive) {
+                $subtotal = $itemTotal / (1 + $totalTaxRate);
+                $gstAmount = $subtotal * ($gstRate / 100);
+                $pstAmount = $subtotal * ($pstRate / 100);
+                $total = $itemTotal;
+            } else {
+                $subtotal = $itemTotal;
+                $gstAmount = $subtotal * ($gstRate / 100);
+                $pstAmount = $subtotal * ($pstRate / 100);
+                $total = $subtotal + $gstAmount + $pstAmount;
+            }
+
+            $cartSubtotal += $subtotal;
+            $cartGstAmount += $gstAmount;
+            $cartPstAmount += $pstAmount;
+            $cartTotal += $total;
+
             $items[] = [
                 'id'       => $id,
                 'name'     => $item['name'],
@@ -415,6 +535,12 @@ class ShopController extends Controller
                 'total'    => $itemTotal,
             ];
         }
-        return ['items' => $items, 'total' => $total];
+        return [
+            'items' => $items, 
+            'subtotal' => $cartSubtotal,
+            'gst_amount' => $cartGstAmount,
+            'pst_amount' => $cartPstAmount,
+            'total' => $cartTotal
+        ];
     }
 }

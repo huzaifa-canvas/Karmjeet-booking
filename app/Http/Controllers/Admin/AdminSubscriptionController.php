@@ -23,8 +23,23 @@ class AdminSubscriptionController extends Controller
         $query = Subscription::with(['user', 'martialArtsClass', 'payments']);
 
         // Filter by Status
-        if ($request->status) {
-            $query->where('status', $request->status);
+        if ($request->filled('status')) {
+            $query->filterStatus($request->status);
+        }
+
+        // Filter by Package Type
+        if ($request->filled('package')) {
+            $query->where('package_type', $request->package);
+        }
+
+        // Filter by Date
+        if ($request->filled('date')) {
+            $dates = explode(' to ', $request->date);
+            if (count($dates) == 2) {
+                $query->whereBetween('created_at', [$dates[0] . ' 00:00:00', $dates[1] . ' 23:59:59']);
+            } else {
+                $query->whereDate('created_at', $dates[0]);
+            }
         }
 
         // Filter by Schedule (MartialArtsClass)

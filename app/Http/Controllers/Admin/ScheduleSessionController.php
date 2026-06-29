@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\MartialArtsClass;
+use App\Models\ClassAttribute;
 use Illuminate\Http\Request;
 
 class ScheduleSessionController extends Controller
@@ -29,14 +30,27 @@ class ScheduleSessionController extends Controller
         // Group by category for display
         $groupedClasses = $classes->groupBy('category');
 
-        return view('modules.admin.schedule-sessions.list', compact('classes', 'groupedClasses'));
+        // Dynamic filters from class attributes
+        $categories = ClassAttribute::active()->ofType('category')->pluck('name');
+        $types = ClassAttribute::active()->ofType('type')->pluck('name');
+        $ageGroups = ClassAttribute::active()->ofType('age_group')->pluck('name');
+        $formats = ClassAttribute::active()->ofType('format')->pluck('name');
+
+        return view('modules.admin.schedule-sessions.list', compact('classes', 'groupedClasses', 'categories', 'types', 'ageGroups', 'formats'));
     }
 
     public function create()
     {
         $isEdit = false;
         $class = null;
-        return view('modules.admin.schedule-sessions.form', compact('isEdit', 'class'));
+
+        $categories = ClassAttribute::active()->ofType('category')->pluck('name');
+        $types = ClassAttribute::active()->ofType('type')->pluck('name');
+        $ageGroups = ClassAttribute::active()->ofType('age_group')->pluck('name');
+        $formats = ClassAttribute::active()->ofType('format')->pluck('name');
+        $rooms = ClassAttribute::active()->ofType('room')->pluck('name');
+
+        return view('modules.admin.schedule-sessions.form', compact('isEdit', 'class', 'categories', 'types', 'ageGroups', 'formats', 'rooms'));
     }
 
     public function store(Request $request)
@@ -51,7 +65,8 @@ class ScheduleSessionController extends Controller
             'age_group'   => 'nullable|string',
             'format'      => 'nullable|string',
             'instructor'  => 'nullable|string|max:255',
-            'room'        => 'nullable|string|max:255',
+            'room'        => 'nullable|array',
+            'room.*'      => 'string',
             'price'       => 'nullable|numeric|min:0',
             'unlimited_price'=> 'nullable|numeric|min:0',
             'day_pass_price'=> 'nullable|numeric|min:0',
@@ -61,7 +76,8 @@ class ScheduleSessionController extends Controller
             'status'      => 'required|in:active,inactive',
         ]);
 
-        $validated['show_drop_in_options'] = $request->has('show_drop_in_options');
+        $validated['show_drop_in_options'] = $request->boolean('show_drop_in_options');
+        $validated['is_tax_inclusive'] = $request->boolean('is_tax_inclusive');
 
         try {
             // Handle image upload
@@ -85,7 +101,14 @@ class ScheduleSessionController extends Controller
     {
         $isEdit = true;
         $class = MartialArtsClass::findOrFail($id);
-        return view('modules.admin.schedule-sessions.form', compact('isEdit', 'class'));
+
+        $categories = ClassAttribute::active()->ofType('category')->pluck('name');
+        $types = ClassAttribute::active()->ofType('type')->pluck('name');
+        $ageGroups = ClassAttribute::active()->ofType('age_group')->pluck('name');
+        $formats = ClassAttribute::active()->ofType('format')->pluck('name');
+        $rooms = ClassAttribute::active()->ofType('room')->pluck('name');
+
+        return view('modules.admin.schedule-sessions.form', compact('isEdit', 'class', 'categories', 'types', 'ageGroups', 'formats', 'rooms'));
     }
 
     public function update(Request $request, $id)
@@ -100,7 +123,8 @@ class ScheduleSessionController extends Controller
             'age_group'   => 'nullable|string',
             'format'      => 'nullable|string',
             'instructor'  => 'nullable|string|max:255',
-            'room'        => 'nullable|string|max:255',
+            'room'        => 'nullable|array',
+            'room.*'      => 'string',
             'price'       => 'nullable|numeric|min:0',
             'unlimited_price'=> 'nullable|numeric|min:0',
             'day_pass_price'=> 'nullable|numeric|min:0',
@@ -110,7 +134,8 @@ class ScheduleSessionController extends Controller
             'status'      => 'required|in:active,inactive',
         ]);
 
-        $validated['show_drop_in_options'] = $request->has('show_drop_in_options');
+        $validated['show_drop_in_options'] = $request->boolean('show_drop_in_options');
+        $validated['is_tax_inclusive'] = $request->boolean('is_tax_inclusive');
 
         try {
             // Handle image upload
@@ -123,7 +148,12 @@ class ScheduleSessionController extends Controller
                 unset($validated['image']);
             }
 
-            MartialArtsClass::where('id', $id)->update($validated);
+            // Since room is an array, we must ensure it is saved. Let's make sure it handles null or empty.
+            if (!isset($validated['room'])) {
+                $validated['room'] = null;
+            }
+
+            MartialArtsClass::findOrFail($id)->update($validated);
             return redirect()->route('schedule-session-edit', $id)
                 ->with(['status' => 'success', 'message' => 'Class updated successfully.']);
         } catch (\Exception $e) {

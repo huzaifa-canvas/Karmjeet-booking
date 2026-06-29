@@ -17,26 +17,26 @@ class ScheduleClassController extends Controller
               ->filterType($request->type)
               ->filterLevel($request->level)
               ->filterAgeGroup($request->age_group)
-              ->filterFormat($request->input('format'));
+              ->filterFormat($request->input('format'))
+              ->filterRoom($request->room);
 
         // Search by name
         if ($request->search) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
+        // Just get the classes, no longer grouped by room
         $classes = $query->orderBy('name')->get();
-        
-        // Group by room for the timetable view
-        $groupedRooms = $classes->groupBy(function($class) {
-            return empty($class->room) ? 'Main Gym Area' : $class->room;
-        });
 
-        $categories = MartialArtsClass::CATEGORIES;
-        $types = MartialArtsClass::TYPES;
+        // Fetch dynamic attributes for filters
+        $categories = \App\Models\ClassAttribute::active()->ofType('category')->pluck('name');
+        $types = \App\Models\ClassAttribute::active()->ofType('type')->pluck('name');
+        $age_groups = \App\Models\ClassAttribute::active()->ofType('age_group')->pluck('name');
+        $formats = \App\Models\ClassAttribute::active()->ofType('format')->pluck('name');
+        $rooms = \App\Models\ClassAttribute::active()->ofType('room')->pluck('name');
         $levels = MartialArtsClass::LEVELS;
-        $age_groups = MartialArtsClass::AGE_GROUPS;
 
-        return view('modules.user.schedule-classes.list', compact('classes', 'groupedRooms', 'categories', 'types', 'levels', 'age_groups'));
+        return view('modules.user.schedule-classes.list', compact('classes', 'categories', 'types', 'levels', 'age_groups', 'formats', 'rooms'));
     }
 
     public function show($id)

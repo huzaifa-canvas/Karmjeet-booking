@@ -2,6 +2,29 @@
 @extends('layouts.master')
 @section('title', ($isEdit ? 'Edit' : 'Create') . ' Class | ' . config('app.name'))
 
+@section('style')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+<style>
+    .select2-container--default .select2-selection--multiple {
+        border: 1px solid #d8d6de;
+        border-radius: 0.357rem;
+        min-height: 38px;
+        padding: 2px 8px;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background: linear-gradient(118deg, #7367f0, #9e95f5);
+        border: none;
+        color: #fff;
+        border-radius: 4px;
+        padding: 2px 8px;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: #fff;
+        margin-right: 4px;
+    }
+</style>
+@endsection
+
 @section('content')
     <div class="app-content content ">
         <div class="content-overlay"></div>
@@ -60,10 +83,18 @@
                                     <input type="text" name="instructor" class="form-control" value="{{ old('instructor', $class->instructor ?? '') }}" placeholder="e.g. Prof. Chad">
                                 </div>
 
-                                {{-- Room / Gym Area --}}
+                                {{-- Room / Gym Area (Multi-Select) --}}
                                 <div class="col-md-3 mb-1">
                                     <label class="form-label fw-bold">Room / Gym Area</label>
-                                    <input type="text" name="room" class="form-control" value="{{ old('room', $class->room ?? '') }}" placeholder="e.g. Grappling Gym">
+                                    @php
+                                        $selectedRooms = old('room', ($isEdit && $class->room) ? (is_array($class->room) ? $class->room : [$class->room]) : []);
+                                    @endphp
+                                    <select name="room[]" id="room-select" class="form-select" multiple>
+                                        @foreach($rooms as $r)
+                                            <option value="{{ $r }}" {{ in_array($r, $selectedRooms) ? 'selected' : '' }}>{{ $r }}</option>
+                                        @endforeach
+                                    </select>
+                                    <small class="text-muted">Select one or more locations.</small>
                                 </div>
                             </div>
 
@@ -116,7 +147,7 @@
                                     <label class="form-label fw-bold">Category <span class="text-danger">*</span></label>
                                     <select name="category" class="form-select" required>
                                         <option value="">Select Category</option>
-                                        @foreach(\App\Models\MartialArtsClass::CATEGORIES as $cat)
+                                        @foreach($categories as $cat)
                                             <option value="{{ $cat }}" {{ old('category', $class->category ?? '') == $cat ? 'selected' : '' }}>{{ $cat }}</option>
                                         @endforeach
                                     </select>
@@ -127,7 +158,7 @@
                                     <label class="form-label fw-bold">Type <span class="text-danger">*</span></label>
                                     <select name="type" class="form-select" required>
                                         <option value="">Select Type</option>
-                                        @foreach(\App\Models\MartialArtsClass::TYPES as $t)
+                                        @foreach($types as $t)
                                             <option value="{{ $t }}" {{ old('type', $class->type ?? '') == $t ? 'selected' : '' }}>{{ $t }}</option>
                                         @endforeach
                                     </select>
@@ -150,7 +181,7 @@
                                     <label class="form-label fw-bold">Age Group</label>
                                     <select name="age_group" class="form-select">
                                         <option value="">Select Age Group</option>
-                                        @foreach(\App\Models\MartialArtsClass::AGE_GROUPS as $ag)
+                                        @foreach($ageGroups as $ag)
                                             <option value="{{ $ag }}" {{ old('age_group', $class->age_group ?? '') == $ag ? 'selected' : '' }}>{{ $ag }}</option>
                                         @endforeach
                                     </select>
@@ -161,7 +192,7 @@
                                     <label class="form-label fw-bold">Format</label>
                                     <select name="format" class="form-select">
                                         <option value="">Select Format</option>
-                                        @foreach(\App\Models\MartialArtsClass::FORMATS as $f)
+                                        @foreach($formats as $f)
                                             <option value="{{ $f }}" {{ old('format', $class->format ?? '') == $f ? 'selected' : '' }}>{{ $f }}</option>
                                         @endforeach
                                     </select>
@@ -214,4 +245,17 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#room-select').select2({
+            placeholder: 'Select room(s)...',
+            allowClear: true,
+            tags: false
+        });
+    });
+</script>
 @endsection

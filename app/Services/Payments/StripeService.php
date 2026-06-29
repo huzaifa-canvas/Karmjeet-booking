@@ -32,7 +32,7 @@ class StripeService
         return $customer;
     }
 
-    public function createCheckoutSession($user, $class, $totalAmount, $successUrl, $cancelUrl, $discountCoupon = null, $package_type = 'normal')
+    public function createCheckoutSession($user, $class, $totalAmount, $successUrl, $cancelUrl, $discountCoupon = null, $package_type = 'normal', $selected_location = null)
     {
         // 1. Ensure Product exists
         if (!$class->stripe_product_id) {
@@ -70,6 +70,7 @@ class StripeService
                     'user_id' => $user->id,
                     'martial_arts_class_id' => $class->id,
                     'package_type' => $package_type,
+                    'selected_location' => $selected_location,
                     'is_one_time' => 'true'
                 ],
             ];
@@ -101,6 +102,7 @@ class StripeService
                     'user_id' => $user->id,
                     'martial_arts_class_id' => $class->id,
                     'package_type' => $package_type,
+                    'selected_location' => $selected_location,
                 ],
             ];
         }
@@ -234,7 +236,7 @@ class StripeService
     /**
      * Create a Stripe Checkout Session for one-time product payment.
      */
-    public function createProductPaymentSession($user, $cartItems, $orderId, $successUrl, $cancelUrl)
+    public function createProductPaymentSession($user, $cartItems, $orderId, $successUrl, $cancelUrl, $gstAmount = 0, $pstAmount = 0)
     {
         $lineItems = [];
         foreach ($cartItems as $productId => $item) {
@@ -247,6 +249,34 @@ class StripeService
                     ],
                 ],
                 'quantity' => $item['quantity'],
+            ];
+        }
+
+        // Add GST as a line item
+        if ($gstAmount > 0) {
+            $lineItems[] = [
+                'price_data' => [
+                    'currency'     => 'usd',
+                    'unit_amount'  => (int)(round($gstAmount, 2) * 100),
+                    'product_data' => [
+                        'name' => 'GST',
+                    ],
+                ],
+                'quantity' => 1,
+            ];
+        }
+
+        // Add PST as a line item
+        if ($pstAmount > 0) {
+            $lineItems[] = [
+                'price_data' => [
+                    'currency'     => 'usd',
+                    'unit_amount'  => (int)(round($pstAmount, 2) * 100),
+                    'product_data' => [
+                        'name' => 'PST',
+                    ],
+                ],
+                'quantity' => 1,
             ];
         }
 

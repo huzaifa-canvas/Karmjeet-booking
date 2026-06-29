@@ -105,7 +105,7 @@
                             <label class="form-label fw-bold small">Category</label>
                             <select name="category" class="form-select form-select-sm" onchange="this.form.submit()">
                                 <option value="">All Categories</option>
-                                @foreach(\App\Models\MartialArtsClass::CATEGORIES as $cat)
+                                @foreach($categories as $cat)
                                     <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>{{ $cat }}</option>
                                 @endforeach
                             </select>
@@ -114,8 +114,26 @@
                             <label class="form-label fw-bold small">Type</label>
                             <select name="type" class="form-select form-select-sm" onchange="this.form.submit()">
                                 <option value="">All Types</option>
-                                @foreach(\App\Models\MartialArtsClass::TYPES as $t)
+                                @foreach($types as $t)
                                     <option value="{{ $t }}" {{ request('type') == $t ? 'selected' : '' }}>{{ $t }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <label class="form-label fw-bold small">Age Group</label>
+                            <select name="age_group" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <option value="">All Ages</option>
+                                @foreach($age_groups as $ag)
+                                    <option value="{{ $ag }}" {{ request('age_group') == $ag ? 'selected' : '' }}>{{ $ag }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <label class="form-label fw-bold small">Format</label>
+                            <select name="format" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <option value="">All Formats</option>
+                                @foreach($formats as $f)
+                                    <option value="{{ $f }}" {{ request('format') == $f ? 'selected' : '' }}>{{ $f }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -123,28 +141,36 @@
                             <label class="form-label fw-bold small">Level</label>
                             <select name="level" class="form-select form-select-sm" onchange="this.form.submit()">
                                 <option value="">All Levels</option>
-                                @foreach(\App\Models\MartialArtsClass::LEVELS as $l)
+                                @foreach($levels as $l)
                                     <option value="{{ $l }}" {{ request('level') == $l ? 'selected' : '' }}>{{ $l }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-4 col-12">
-                            <label class="form-label fw-bold small">Search</label>
+                        <div class="col-md-2 col-6">
+                            <label class="form-label fw-bold small">Location</label>
+                            <select name="room" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <option value="">All Locations</option>
+                                @foreach($rooms as $r)
+                                    <option value="{{ $r }}" {{ request('room') == $r ? 'selected' : '' }}>{{ $r }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-10 col-12 mt-1">
                             <div class="input-group input-group-sm">
                                 <input type="text" name="search" class="form-control" value="{{ request('search') }}" placeholder="Search Class Name">
-                                <button class="btn btn-primary" type="submit"><i data-feather="search"></i></button>
+                                <button class="btn btn-primary" type="submit"><i data-feather="search"></i> Search</button>
                             </div>
                         </div>
-                        <div class="col-md-2 col-12">
+                        <div class="col-md-2 col-12 mt-1">
                             <a href="{{ route('user.schedule-session-list') }}" class="btn btn-outline-secondary btn-sm w-100">Clear</a>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <!-- Timetable by Room Starts -->
+            <!-- Class List Starts -->
             <div class="row">
-                @if($groupedRooms->isEmpty())
+                @if($classes->isEmpty())
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body text-center py-5">
@@ -154,48 +180,49 @@
                         </div>
                     </div>
                 @else
-                    @foreach ($groupedRooms as $room => $roomClasses)
-                        <div class="col-12 mb-3">
-                            <h3 class="fw-bolder text-primary mb-2 border-bottom pb-1">
-                                <i data-feather="map-pin" class="me-50"></i> {{ $room }}
-                            </h3>
-                            <div class="row">
-                                @foreach($roomClasses as $class)
-                                    <div class="col-lg-3 col-md-4 col-sm-6 mb-2">
-                                        <div class="ecommerce-card1">
-                                            <a href="{{ route('user.schedule-session-detail', $class->id) }}">
-                                                <div class="class-img-wrapper">
-                                                    <img src="{{ asset($class->image ?: 'assets/images/no-preview.png') }}" alt="{{ $class->name }}" />
-                                                    <span class="class-badge">{{ $class->category }}</span>
-                                                </div>
-                                            </a>
-                                            <div class="class-details">
-                                                <a href="{{ route('user.schedule-session-detail', $class->id) }}">
-                                                    <h5 class="class-title">{{ $class->name }}</h5>
-                                                </a>
-                                                <div class="class-meta">
-                                                    <span class="class-level"><i data-feather="bar-chart-2" class="font-small-3 me-25"></i>{{ $class->level }}</span>
-                                                    <span class="class-price">${{ number_format($class->price ?? 0, 2) }}</span>
-                                                </div>
-                                                
-                                                <div class="d-flex align-items-center mb-1 mt-auto">
-                                                    <i data-feather="clock" class="text-primary font-small-3 me-50"></i>
-                                                    <small class="text-muted text-truncate" style="max-width: 90%;">{{ $class->description ? Str::limit(str_replace("\n", ", ", $class->description), 40) : 'Schedule info on details page' }}</small>
-                                                </div>
-
-                                                <a href="{{ route('user.schedule-session-detail', $class->id) }}" class="btn btn-primary btn-sm w-100 text-center mt-1">
-                                                    View Details
-                                                </a>
-                                            </div>
-                                        </div>
+                    @foreach($classes as $class)
+                        <div class="col-lg-3 col-md-4 col-sm-6 mb-2">
+                            <div class="ecommerce-card1">
+                                <a href="{{ route('user.schedule-session-detail', $class->id) }}">
+                                    <div class="class-img-wrapper">
+                                        <img src="{{ asset($class->image ?: 'assets/images/no-preview.png') }}" alt="{{ $class->name }}" />
+                                        <span class="class-badge">{{ $class->category }}</span>
                                     </div>
-                                @endforeach
+                                </a>
+                                <div class="class-details">
+                                    <a href="{{ route('user.schedule-session-detail', $class->id) }}">
+                                        <h5 class="class-title">{{ $class->name }}</h5>
+                                    </a>
+                                    <div class="class-meta">
+                                        <span class="class-level"><i data-feather="bar-chart-2" class="font-small-3 me-25"></i>{{ $class->level }}</span>
+                                        <span class="class-price">${{ number_format($class->price ?? 0, 2) }}</span>
+                                    </div>
+                                    
+                                    <div class="d-flex flex-column mb-1 mt-auto gap-1">
+                                        <div class="d-flex align-items-center">
+                                            <i data-feather="clock" class="text-primary font-small-3 me-50"></i>
+                                            <small class="text-muted text-truncate" style="max-width: 90%;">{{ $class->description ? Str::limit(str_replace("\n", ", ", $class->description), 40) : 'Schedule info on details page' }}</small>
+                                        </div>
+                                        @if($class->room && is_array($class->room) && count($class->room) > 0)
+                                        <div class="d-flex align-items-center">
+                                            <i data-feather="map-pin" class="text-primary font-small-3 me-50"></i>
+                                            <small class="text-muted text-truncate" style="max-width: 90%;">
+                                                {{ implode(', ', $class->room) }}
+                                            </small>
+                                        </div>
+                                        @endif
+                                    </div>
+
+                                    <a href="{{ route('user.schedule-session-detail', $class->id) }}" class="btn btn-primary btn-sm w-100 text-center mt-1">
+                                        View Details
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     @endforeach
                 @endif
             </div>
-            <!-- Timetable by Room Ends -->
+            <!-- Class List Ends -->
 
         </div>
     </div>

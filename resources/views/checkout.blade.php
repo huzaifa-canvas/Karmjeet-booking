@@ -88,9 +88,8 @@
                             <div id="step-cart" class="content" role="tabpanel" aria-labelledby="step-cart-trigger">
                                 <div id="place-order" class="list-view product-checkout">
                                     <div class="checkout-items">
-                                        @php $cartTotal = 0; @endphp
                                         @foreach($cart as $id => $item)
-                                            @php $itemTotal = $item['price'] * $item['quantity']; $cartTotal += $itemTotal; @endphp
+                                            @php $itemTotal = $item['price'] * $item['quantity']; @endphp
                                             <div class="card ecommerce-card" id="cart-item-{{ $id }}">
                                                 <div class="item-img">
                                                     <a href="{{ route('shop.show', $item['slug']) }}">
@@ -148,9 +147,21 @@
                                                 <div class="price-details">
                                                     <ul class="list-unstyled">
                                                         <li class="price-detail">
-                                                            <div class="detail-title">Total MRP</div>
-                                                            <div class="detail-amt" id="totalMrp">${{ number_format($cartTotal, 2) }}</div>
+                                                            <div class="detail-title">Subtotal</div>
+                                                            <div class="detail-amt" id="cartSubtotalDisplay">${{ number_format($cartSubtotal, 2) }}</div>
                                                         </li>
+                                                        @if($gstRate > 0)
+                                                        <li class="price-detail">
+                                                            <div class="detail-title">GST ({{ $gstRate }}%)</div>
+                                                            <div class="detail-amt" id="cartGstDisplay">${{ number_format($cartGstAmount, 2) }}</div>
+                                                        </li>
+                                                        @endif
+                                                        @if($pstRate > 0)
+                                                        <li class="price-detail">
+                                                            <div class="detail-title">PST ({{ $pstRate }}%)</div>
+                                                            <div class="detail-amt" id="cartPstDisplay">${{ number_format($cartPstAmount, 2) }}</div>
+                                                        </li>
+                                                        @endif
                                                         <li class="price-detail">
                                                             <div class="detail-title">Delivery Charges</div>
                                                             <div class="detail-amt discount-amt text-success">Free</div>
@@ -163,6 +174,9 @@
                                                             <div class="detail-amt fw-bolder" id="cartTotalDisplay">${{ number_format($cartTotal, 2) }}</div>
                                                         </li>
                                                     </ul>
+                                                    <div class="text-center mb-1">
+                                                        <small class="text-muted"><i data-feather="info" style="width: 12px"></i> Taxes calculated based on items' Tax Inclusive settings</small>
+                                                    </div>
                                                     <button type="button" class="btn btn-primary w-100 btn-next place-order" onclick="stepper.next()">Place Order</button>
                                                 </div>
                                             </div>
@@ -279,9 +293,21 @@
                                             <div class="card-body">
                                                 <ul class="list-unstyled price-details">
                                                     <li class="price-detail">
-                                                        <div class="details-title">Price of {{ count($cart) }} items</div>
-                                                        <div class="detail-amt"><strong>${{ number_format($cartTotal, 2) }}</strong></div>
+                                                        <div class="details-title">Subtotal</div>
+                                                        <div class="detail-amt"><strong id="paymentSubtotalDisplay">${{ number_format($cartSubtotal, 2) }}</strong></div>
                                                     </li>
+                                                    @if($gstRate > 0)
+                                                    <li class="price-detail">
+                                                        <div class="details-title">GST ({{ $gstRate }}%)</div>
+                                                        <div class="detail-amt" id="paymentGstDisplay">${{ number_format($cartGstAmount, 2) }}</div>
+                                                    </li>
+                                                    @endif
+                                                    @if($pstRate > 0)
+                                                    <li class="price-detail">
+                                                        <div class="details-title">PST ({{ $pstRate }}%)</div>
+                                                        <div class="detail-amt" id="paymentPstDisplay">${{ number_format($cartPstAmount, 2) }}</div>
+                                                    </li>
+                                                    @endif
                                                     <li class="price-detail">
                                                         <div class="details-title">Delivery Charges</div>
                                                         <div class="detail-amt discount-amt text-success">Free</div>
@@ -291,7 +317,7 @@
                                                 <ul class="list-unstyled price-details">
                                                     <li class="price-detail">
                                                         <div class="details-title">Amount Payable</div>
-                                                        <div class="detail-amt fw-bolder">${{ number_format($cartTotal, 2) }}</div>
+                                                        <div class="detail-amt fw-bolder" id="paymentTotalDisplay">${{ number_format($cartTotal, 2) }}</div>
                                                     </li>
                                                 </ul>
                                                 <button type="submit" class="btn btn-primary w-100 mt-1">
@@ -338,8 +364,15 @@
                         if (res.cartCount === 0) {
                             window.location.href = '{{ route("shop.index") }}';
                         } else {
-                            $('#totalMrp').text('$' + res.cartData.total.toFixed(2));
+                            if($('#cartSubtotalDisplay').length) $('#cartSubtotalDisplay').text('$' + res.cartData.subtotal.toFixed(2));
+                            if($('#cartGstDisplay').length) $('#cartGstDisplay').text('$' + res.cartData.gst_amount.toFixed(2));
+                            if($('#cartPstDisplay').length) $('#cartPstDisplay').text('$' + res.cartData.pst_amount.toFixed(2));
                             $('#cartTotalDisplay').text('$' + res.cartData.total.toFixed(2));
+                            
+                            if($('#paymentSubtotalDisplay').length) $('#paymentSubtotalDisplay').text('$' + res.cartData.subtotal.toFixed(2));
+                            if($('#paymentGstDisplay').length) $('#paymentGstDisplay').text('$' + res.cartData.gst_amount.toFixed(2));
+                            if($('#paymentPstDisplay').length) $('#paymentPstDisplay').text('$' + res.cartData.pst_amount.toFixed(2));
+                            if($('#paymentTotalDisplay').length) $('#paymentTotalDisplay').text('$' + res.cartData.total.toFixed(2));
                         }
                     }
                 }
@@ -365,8 +398,15 @@
                         success: function(res) {
                             if (res.success) {
                                 updateHeaderCart(res.cartData, res.cartCount);
-                                $('#totalMrp').text('$' + res.cartData.total.toFixed(2));
+                                if($('#cartSubtotalDisplay').length) $('#cartSubtotalDisplay').text('$' + res.cartData.subtotal.toFixed(2));
+                                if($('#cartGstDisplay').length) $('#cartGstDisplay').text('$' + res.cartData.gst_amount.toFixed(2));
+                                if($('#cartPstDisplay').length) $('#cartPstDisplay').text('$' + res.cartData.pst_amount.toFixed(2));
                                 $('#cartTotalDisplay').text('$' + res.cartData.total.toFixed(2));
+                                
+                                if($('#paymentSubtotalDisplay').length) $('#paymentSubtotalDisplay').text('$' + res.cartData.subtotal.toFixed(2));
+                                if($('#paymentGstDisplay').length) $('#paymentGstDisplay').text('$' + res.cartData.gst_amount.toFixed(2));
+                                if($('#paymentPstDisplay').length) $('#paymentPstDisplay').text('$' + res.cartData.pst_amount.toFixed(2));
+                                if($('#paymentTotalDisplay').length) $('#paymentTotalDisplay').text('$' + res.cartData.total.toFixed(2));
                                 // Update item row total
                                 var itemData = res.cartData.items.find(i => String(i.id) === String(productId));
                                 if(itemData){

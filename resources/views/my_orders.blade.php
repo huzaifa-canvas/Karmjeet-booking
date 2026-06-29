@@ -12,6 +12,12 @@
                 </div>
             </div>
             <div class="content-body">
+                @if(session('status'))
+                    <div class="alert alert-{{ session('status') == 'success' ? 'success' : 'danger' }} alert-dismissible fade show" role="alert">
+                        {{ session('message') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
                 <div class="card">
                     <div class="card-body">
                         <div class="table-responsive">
@@ -41,6 +47,11 @@
                                                     <a href="{{ route('user.order.details', $order->id) }}" class="btn btn-sm btn-outline-primary">View</a>
                                                     @if($order->payment_method == 'stripe' && $order->payment_status == 'unpaid')
                                                         <a href="{{ route('user.order.pay', $order->id) }}" class="btn btn-sm btn-success">Pay Now</a>
+                                                        <form action="{{ route('user.order.cancel', $order->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this order?')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                                                        </form>
                                                     @endif
                                                 </div>
                                             </td>

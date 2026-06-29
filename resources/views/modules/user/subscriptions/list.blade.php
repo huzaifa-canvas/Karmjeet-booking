@@ -2,6 +2,8 @@
 @section('title', 'My Subscriptions | ' . config('app.name'))
 
 @section('style')
+<link rel="stylesheet" type="text/css" href="{{ asset('app-assets/vendors/css/pickers/flatpickr/flatpickr.min.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ asset('app-assets/css/plugins/forms/pickers/form-flat-pickr.css') }}">
 <style>
     .sub-table thead th {
         background-color: #f3f2f7 !important;
@@ -50,15 +52,39 @@
         </div>
         
         <div class="content-body">
-            <div class="d-flex justify-content-end mb-1">
-                <form action="{{ route('user.subscription.list') }}" method="GET">
-                    <select name="status" class="form-select" onchange="this.form.submit()">
-                        <option value="">All Statuses</option>
-                        <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
-                        <option value="canceled" {{ request('status') == 'canceled' ? 'selected' : '' }}>Canceled</option>
-                        <option value="past_due" {{ request('status') == 'past_due' ? 'selected' : '' }}>Past Due</option>
-                    </select>
-                </form>
+            <div class="card mb-2">
+                <div class="card-body py-1">
+                    <form action="{{ route('user.subscription.list') }}" method="GET" class="row g-1 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Date</label>
+                            <input type="text" name="date" class="form-control form-control-sm flatpickr-range bg-white" placeholder="YYYY-MM-DD to YYYY-MM-DD" value="{{ request('date') }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold">Package Type</label>
+                            <select name="package" class="form-select form-select-sm">
+                                <option value="">All Packages</option>
+                                <option value="normal" {{ request('package') == 'normal' ? 'selected' : '' }}>Standard</option>
+                                <option value="unlimited" {{ request('package') == 'unlimited' ? 'selected' : '' }}>Unlimited</option>
+                                <option value="day_pass" {{ request('package') == 'day_pass' ? 'selected' : '' }}>Day Pass</option>
+                                <option value="weekly_pass" {{ request('package') == 'weekly_pass' ? 'selected' : '' }}>Weekly Pass</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Status</label>
+                            <select name="status" class="form-select form-select-sm">
+                                <option value="">All Statuses</option>
+                                <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                                <option value="expired" {{ request('status') == 'expired' ? 'selected' : '' }}>Expired</option>
+                                <option value="canceled" {{ request('status') == 'canceled' ? 'selected' : '' }}>Canceled</option>
+                                <option value="past_due" {{ request('status') == 'past_due' ? 'selected' : '' }}>Past Due</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end gap-1">
+                            <button type="submit" class="btn btn-primary btn-sm flex-grow-1">Filter</button>
+                            <a href="{{ route('user.subscription.list') }}" class="btn btn-outline-secondary btn-sm flex-grow-1">Clear</a>
+                        </div>
+                    </form>
+                </div>
             </div>
             
             @if($subscriptions->isEmpty())
@@ -96,6 +122,9 @@
                                             <div>
                                                 <h6 class="mb-0 fw-bolder">{{ $sub->martialArtsClass->name }}</h6>
                                                 <small class="text-muted">{{ $sub->martialArtsClass->category }}</small>
+                                                @if($sub->selected_location)
+                                                    <br><small class="text-primary"><i data-feather="map-pin" style="width:11px;height:11px;"></i> {{ $sub->selected_location }}</small>
+                                                @endif
                                             </div>
                                         </div>
                                     </td>
@@ -121,6 +150,19 @@
                                             @if($sub->status == 'active' && $sub->next_payment_date)
                                                 <span class="fw-bold">{{ $sub->next_payment_date->format('M d, Y') }}</span>
                                                 <small class="text-muted small">Auto-renewal active</small>
+                                            @elseif(in_array($sub->package_type, ['day_pass', 'weekly_pass']))
+                                                @php
+                                                    $days = $sub->package_type === 'day_pass' ? 1 : 7;
+                                                    $expiresAt = $sub->created_at ? $sub->created_at->copy()->addDays($days) : null;
+                                                @endphp
+                                                @if($expiresAt)
+                                                    <span class="fw-bold">{{ $expiresAt->format('M d, Y') }}</span>
+                                                    <small class="text-{{ $sub->status == 'expired' ? 'danger' : 'success' }} small">
+                                                        {{ $sub->status == 'expired' ? 'Expired' : 'Valid Until' }}
+                                                    </small>
+                                                @else
+                                                    <span class="text-muted">---</span>
+                                                @endif
                                             @else
                                                 <span class="text-muted">---</span>
                                             @endif
@@ -241,7 +283,14 @@
 @endsection
 
 @section('scripts')
+<script src="{{ asset('app-assets/vendors/js/pickers/flatpickr/flatpickr.min.js') }}"></script>
 <script>
-    if (typeof feather !== 'undefined') { feather.replace(); }
+    $(document).ready(function() {
+        if (typeof feather !== 'undefined') { feather.replace(); }
+        $('.flatpickr-range').flatpickr({
+            mode: 'range',
+            dateFormat: 'Y-m-d'
+        });
+    });
 </script>
 @endsection

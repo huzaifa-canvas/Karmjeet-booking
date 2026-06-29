@@ -65,7 +65,7 @@
                                 <label class="form-label fw-bold small">Category</label>
                                 <select name="category" class="form-select form-select-sm">
                                     <option value="">All</option>
-                                    @foreach(\App\Models\MartialArtsClass::CATEGORIES as $cat)
+                                    @foreach($categories as $cat)
                                         <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>{{ $cat }}</option>
                                     @endforeach
                                 </select>
@@ -74,7 +74,7 @@
                                 <label class="form-label fw-bold small">Type</label>
                                 <select name="type" class="form-select form-select-sm">
                                     <option value="">All</option>
-                                    @foreach(\App\Models\MartialArtsClass::TYPES as $t)
+                                    @foreach($types as $t)
                                         <option value="{{ $t }}" {{ request('type') == $t ? 'selected' : '' }}>{{ $t }}</option>
                                     @endforeach
                                 </select>
@@ -92,7 +92,7 @@
                                 <label class="form-label fw-bold small">Age Group</label>
                                 <select name="age_group" class="form-select form-select-sm">
                                     <option value="">All</option>
-                                    @foreach(\App\Models\MartialArtsClass::AGE_GROUPS as $ag)
+                                    @foreach($ageGroups as $ag)
                                         <option value="{{ $ag }}" {{ request('age_group') == $ag ? 'selected' : '' }}>{{ $ag }}</option>
                                     @endforeach
                                 </select>
@@ -101,7 +101,7 @@
                                 <label class="form-label fw-bold small">Format</label>
                                 <select name="format" class="form-select form-select-sm">
                                     <option value="">All</option>
-                                    @foreach(\App\Models\MartialArtsClass::FORMATS as $f)
+                                    @foreach($formats as $f)
                                         <option value="{{ $f }}" {{ request('format') == $f ? 'selected' : '' }}>{{ $f }}</option>
                                     @endforeach
                                 </select>

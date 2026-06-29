@@ -52,7 +52,23 @@
                                     <tfoot>
                                         <tr>
                                             <th colspan="3" class="text-end">Subtotal</th>
-                                            <th>${{ number_format($order->total_amount, 2) }}</th>
+                                            <th>${{ number_format($order->subtotal > 0 ? $order->subtotal : $order->total_amount, 2) }}</th>
+                                        </tr>
+                                        @if($order->gst_amount > 0)
+                                        <tr>
+                                            <th colspan="3" class="text-end">GST</th>
+                                            <th>${{ number_format($order->gst_amount, 2) }}</th>
+                                        </tr>
+                                        @endif
+                                        @if($order->pst_amount > 0)
+                                        <tr>
+                                            <th colspan="3" class="text-end">PST</th>
+                                            <th>${{ number_format($order->pst_amount, 2) }}</th>
+                                        </tr>
+                                        @endif
+                                        <tr>
+                                            <th colspan="3" class="text-end text-success fs-5">Total</th>
+                                            <th class="text-success fs-5">${{ number_format($order->total_amount, 2) }}</th>
                                         </tr>
                                     </tfoot>
                                 </table>

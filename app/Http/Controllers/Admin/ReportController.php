@@ -13,25 +13,61 @@ use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
-    private function getFinancialData()
+    /**
+     * Build financial data with optional date filtering.
+     */
+    private function getFinancialData(Request $request = null)
     {
         $settings = SiteSetting::first();
         $gstRate = $settings->gst_percentage ?? 0;
         $pstRate = $settings->pst_percentage ?? 0;
         $totalTaxRate = ($gstRate + $pstRate) / 100;
 
+        // Determine date filters
+        $dateFrom = null;
+        $dateTo = null;
+
+        if ($request) {
+            if ($request->date_range) {
+                // flatpickr range: "2026-01-01 to 2026-06-30"
+                $parts = explode(' to ', $request->date_range);
+                $dateFrom = Carbon::parse(trim($parts[0]))->startOfDay();
+                $dateTo = isset($parts[1]) ? Carbon::parse(trim($parts[1]))->endOfDay() : Carbon::parse(trim($parts[0]))->endOfDay();
+            } elseif ($request->year) {
+                $year = (int) $request->year;
+                if ($request->month) {
+                    $month = (int) $request->month;
+                    $dateFrom = Carbon::createFromDate($year, $month, 1)->startOfDay();
+                    $dateTo = Carbon::createFromDate($year, $month, 1)->endOfMonth()->endOfDay();
+                } else {
+                    $dateFrom = Carbon::createFromDate($year, 1, 1)->startOfDay();
+                    $dateTo = Carbon::createFromDate($year, 12, 31)->endOfDay();
+                }
+            }
+        }
+
         // Get Subscriptions
-        $payments = SubscriptionPayment::with(['subscription.martialArtsClass', 'subscription.user'])
-            ->where('status', 'succeeded')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $paymentsQuery = SubscriptionPayment::with(['subscription.martialArtsClass', 'subscription.user'])
+            ->where('status', 'succeeded');
+        
+        if ($dateFrom && $dateTo) {
+            $paymentsQuery->whereBetween('created_at', [$dateFrom, $dateTo]);
+        }
+
+        $payments = $paymentsQuery->orderBy('created_at', 'desc')->get();
 
         // Get Orders
-        $orders = \App\Models\Order::with(['user'])
-            ->where('status', 'completed')
-            ->orWhere('payment_status', 'paid')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $ordersQuery = \App\Models\Order::with(['user'])
+            ->where(function($q) {
+                $q->where('status', 'completed')
+                  ->orWhere('payment_status', 'paid');
+            });
+        
+        if ($dateFrom && $dateTo) {
+            $ordersQuery->whereBetween('created_at', [$dateFrom, $dateTo]);
+        }
+
+        $orders = $ordersQuery->orderBy('created_at', 'desc')->get();
 
         $transactions = collect();
         $monthlyData = [];
@@ -121,7 +157,7 @@ class ReportController extends Controller
 
     public function financial(Request $request)
     {
-        $data = $this->getFinancialData();
+        $data = $this->getFinancialData($request);
         
         $chartLabels = array_keys($data['monthlyData']);
         $chartSubscriptionRevenue = array_column($data['monthlyData'], 'subscription_revenue');
@@ -136,18 +172,37 @@ class ReportController extends Controller
             'query' => $request->query(),
         ]);
 
+        // Available years for dropdown (from 2024 to current year)
+        $availableYears = range(2024, now()->year);
+
         return view('modules.admin.reports.financial', array_merge($data, [
             'chartLabels' => $chartLabels,
             'chartSubscriptionRevenue' => $chartSubscriptionRevenue,
             'chartProductRevenue' => $chartProductRevenue,
-            'invoices' => $invoices
+            'invoices' => $invoices,
+            'availableYears' => $availableYears,
+            'selectedYear' => $request->year,
+            'selectedMonth' => $request->month,
+            'selectedDateRange' => $request->date_range,
         ]));
     }
 
-    public function downloadFinancialCsv()
+    public function downloadFinancialCsv(Request $request)
     {
-        $data = $this->getFinancialData();
-        $fileName = "Financial_Report_" . date('Y-m-d') . ".csv";
+        $data = $this->getFinancialData($request);
+        
+        // Build filename with filter info
+        $filterLabel = '';
+        if ($request->date_range) {
+            $filterLabel = '_' . str_replace([' to ', ' '], ['_to_', ''], $request->date_range);
+        } elseif ($request->year) {
+            $filterLabel = '_' . $request->year;
+            if ($request->month) {
+                $filterLabel .= '-' . str_pad($request->month, 2, '0', STR_PAD_LEFT);
+            }
+        }
+        
+        $fileName = "Financial_Report" . $filterLabel . "_" . date('Y-m-d') . ".csv";
 
         $headers = array(
             "Content-type"        => "text/csv",
@@ -159,11 +214,25 @@ class ReportController extends Controller
 
         $columns = ['Date', 'Type', 'Customer', 'Item/Order', 'Total Amount', 'GST Amount', 'PST Amount', 'Stripe/Payment ID'];
 
-        $callback = function() use($data, $columns) {
+        $callback = function() use($data, $columns, $request) {
             $file = fopen('php://output', 'w');
             
             // Add Summary Data
             fputcsv($file, ['Financial Summary Report', 'Date Generated: ' . date('Y-m-d')]);
+            
+            // Show active filter
+            if ($request->date_range) {
+                fputcsv($file, ['Filter: Date Range', $request->date_range]);
+            } elseif ($request->year) {
+                $filterInfo = 'Year: ' . $request->year;
+                if ($request->month) {
+                    $filterInfo .= ', Month: ' . Carbon::createFromDate($request->year, $request->month, 1)->format('F');
+                }
+                fputcsv($file, ['Filter', $filterInfo]);
+            } else {
+                fputcsv($file, ['Filter', 'All Time']);
+            }
+            
             fputcsv($file, []);
             fputcsv($file, ['Total Revenue', '$' . number_format($data['totalRevenue'], 2)]);
             fputcsv($file, ['Total GST Collected', '$' . number_format($data['totalGst'], 2)]);

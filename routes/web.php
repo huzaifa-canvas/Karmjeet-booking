@@ -341,6 +341,14 @@ Route::controller(\App\Http\Controllers\Admin\ScheduleSessionController::class)-
     Route::get('schedule-session/{id}/delete', 'destroy')->name('schedule-session-delete');
 });
 
+// Admin: Class Attributes
+Route::controller(\App\Http\Controllers\Admin\ClassAttributeController::class)->middleware(['auth', 'Allow:admin'])->prefix('admin')->group(function () {
+    Route::get('class-attributes', 'index')->name('admin.class-attributes.index');
+    Route::post('class-attributes/store', 'store')->name('admin.class-attributes.store');
+    Route::post('class-attributes/{id}/update', 'update')->name('admin.class-attributes.update');
+    Route::get('class-attributes/{id}/delete', 'destroy')->name('admin.class-attributes.delete');
+});
+
 // Admin: Pricing Plans
 Route::controller(\App\Http\Controllers\Admin\PricingPlanController::class)->middleware(['auth', 'Allow:admin'])->prefix('admin')->group(function () {
     Route::get('pricing-plans', 'index')->name('admin.pricing-plans.index');
@@ -440,6 +448,7 @@ Route::controller(\App\Http\Controllers\ShopController::class)->middleware(['aut
     Route::get('shop/my-orders', 'myOrders')->name('user.orders');
     Route::get('shop/my-orders/{id}', 'myOrderDetails')->name('user.order.details');
     Route::get('shop/my-orders/{id}/pay', 'payOrder')->name('user.order.pay');
+    Route::delete('shop/my-orders/{id}/cancel', 'cancelOrder')->name('user.order.cancel');
     Route::get('shop/{slug}', 'show')->name('shop.show');
 });
 

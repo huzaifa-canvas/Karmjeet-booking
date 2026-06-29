@@ -16,6 +16,7 @@ class Subscription extends Model
         'next_payment_date',
         'ends_at',
         'package_type',
+        'selected_location',
     ];
 
     protected $casts = [
@@ -57,5 +58,59 @@ class Subscription extends Model
         }
 
         return $this->martialArtsClass->price;
+    }
+
+    public function getStatusAttribute($value)
+    {
+        if ($value === 'active' && in_array($this->package_type, ['day_pass', 'weekly_pass'])) {
+            $days = $this->package_type === 'day_pass' ? 1 : 7;
+            if ($this->created_at && $this->created_at->copy()->addDays($days)->isPast()) {
+                return 'expired';
+            }
+        }
+
+        if ($this->ends_at && $this->ends_at->isPast()) {
+            return 'expired';
+        }
+
+        return $value;
+    }
+
+    public function scopeFilterStatus($query, $status)
+    {
+        if (!$status) {
+            return $query;
+        }
+
+        if ($status === 'expired') {
+            return $query->where(function($q) {
+                $q->where('status', 'expired')
+                  ->orWhere(function($subQ) {
+                      $subQ->where('status', 'active')->where('package_type', 'day_pass')->where('created_at', '<', now()->subDay());
+                  })
+                  ->orWhere(function($subQ) {
+                      $subQ->where('status', 'active')->where('package_type', 'weekly_pass')->where('created_at', '<', now()->subDays(7));
+                  })
+                  ->orWhere(function($subQ) {
+                      $subQ->whereNotNull('ends_at')->where('ends_at', '<', now());
+                  });
+            });
+        } elseif ($status === 'active') {
+            return $query->where('status', 'active')
+                  ->where(function($q) {
+                      $q->whereNotIn('package_type', ['day_pass', 'weekly_pass'])
+                        ->orWhere(function($subQ) {
+                            $subQ->where('package_type', 'day_pass')->where('created_at', '>=', now()->subDay());
+                        })
+                        ->orWhere(function($subQ) {
+                            $subQ->where('package_type', 'weekly_pass')->where('created_at', '>=', now()->subDays(7));
+                        });
+                  })
+                  ->where(function($q) {
+                      $q->whereNull('ends_at')->orWhere('ends_at', '>=', now());
+                  });
+        }
+
+        return $query->where('status', $status);
     }
 }

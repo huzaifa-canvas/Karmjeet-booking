@@ -26,7 +26,20 @@ class SubscriptionController extends Controller
             ->with(['martialArtsClass', 'payments']);
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->filterStatus($request->status);
+        }
+
+        if ($request->filled('package')) {
+            $query->where('package_type', $request->package);
+        }
+
+        if ($request->filled('date')) {
+            $dates = explode(' to ', $request->date);
+            if (count($dates) == 2) {
+                $query->whereBetween('created_at', [$dates[0] . ' 00:00:00', $dates[1] . ' 23:59:59']);
+            } else {
+                $query->whereDate('created_at', $dates[0]);
+            }
         }
 
         $subscriptions = $query->orderBy('created_at', 'desc')->paginate(10);
@@ -53,12 +66,11 @@ class SubscriptionController extends Controller
             return redirect()->back()->with(['status' => 'failed', 'message' => 'You are already subscribed to this class.']);
         }
 
-        // Tax Calculation
+        // Tax Calculation (Schedule Sessions only apply GST, no PST)
         $gstSetting = \App\Models\SiteSetting::where('key', 'gst_percentage')->first();
-        $pstSetting = \App\Models\SiteSetting::where('key', 'pst_percentage')->first();
         $gstRate = $gstSetting ? floatval($gstSetting->value) : 0;
-        $pstRate = $pstSetting ? floatval($pstSetting->value) : 0;
-        $totalTaxRate = ($gstRate + $pstRate) / 100;
+        $pstRate = 0;
+        $totalTaxRate = $gstRate / 100;
 
         $package_type = request('package_type', 'normal');
         
@@ -74,8 +86,8 @@ class SubscriptionController extends Controller
         // Calculate breakdown for the currently selected package
         $subtotal = $is_tax_inclusive ? $price / (1 + $totalTaxRate) : $price;
         $gstAmount = $subtotal * ($gstRate / 100);
-        $pstAmount = $subtotal * ($pstRate / 100);
-        $total = $is_tax_inclusive ? $price : $subtotal + $gstAmount + $pstAmount;
+        $pstAmount = 0;
+        $total = $is_tax_inclusive ? $price : $subtotal + $gstAmount;
 
         // Calculate breakdown for Unlimited Package specifically (for JS toggling)
         $unlimited_subtotal = 0;
@@ -86,8 +98,7 @@ class SubscriptionController extends Controller
             $u_price = $class->unlimited_price;
             $unlimited_subtotal = $is_tax_inclusive ? $u_price / (1 + $totalTaxRate) : $u_price;
             $unlimited_gst = $unlimited_subtotal * ($gstRate / 100);
-            $unlimited_pst = $unlimited_subtotal * ($pstRate / 100);
-            $unlimited_total = $is_tax_inclusive ? $u_price : $unlimited_subtotal + $unlimited_gst + $unlimited_pst;
+            $unlimited_total = $is_tax_inclusive ? $u_price : $unlimited_subtotal + $unlimited_gst;
         }
 
         $taxDetails = [
@@ -107,7 +118,10 @@ class SubscriptionController extends Controller
             'is_inclusive' => $is_tax_inclusive
         ];
 
-        return view('modules.user.subscriptions.checkout', compact('class', 'taxDetails'));
+        // Get rooms for this class for location selection
+        $classRooms = is_array($class->room) ? $class->room : ($class->room ? [$class->room] : []);
+
+        return view('modules.user.subscriptions.checkout', compact('class', 'taxDetails', 'classRooms'));
     }
 
     public function processCheckout(Request $request, $id)
@@ -116,6 +130,7 @@ class SubscriptionController extends Controller
         $user = Auth::user();
         
         $package_type = $request->get('package_type', 'normal');
+        $selected_location = $request->get('selected_location');
 
         $discountCoupon = null;
         if ($request->filled('coupon_code')) {
@@ -128,10 +143,9 @@ class SubscriptionController extends Controller
         }
 
         $gstSetting = \App\Models\SiteSetting::where('key', 'gst_percentage')->first();
-        $pstSetting = \App\Models\SiteSetting::where('key', 'pst_percentage')->first();
         $gstRate = $gstSetting ? floatval($gstSetting->value) : 0;
-        $pstRate = $pstSetting ? floatval($pstSetting->value) : 0;
-        $totalTaxRate = ($gstRate + $pstRate) / 100;
+        $pstRate = 0; // No PST for schedule-sessions
+        $totalTaxRate = $gstRate / 100;
         
         $price = $class->price;
         if ($package_type === 'unlimited') {
@@ -149,8 +163,8 @@ class SubscriptionController extends Controller
         } else {
             $subtotal = $price;
             $gstAmount = $subtotal * ($gstRate / 100);
-            $pstAmount = $subtotal * ($pstRate / 100);
-            $totalAmount = $subtotal + $gstAmount + $pstAmount;
+            $pstAmount = 0;
+            $totalAmount = $subtotal + $gstAmount;
         }
 
         try {
@@ -161,7 +175,8 @@ class SubscriptionController extends Controller
                 route('user.subscription.success'),
                 route('user.schedule-session-detail', $class->id),
                 $discountCoupon,
-                $package_type
+                $package_type,
+                $selected_location
             );
 
             // Store coupon code in session for success callback tracking if needed
@@ -188,6 +203,7 @@ class SubscriptionController extends Controller
             $userId = $session->metadata->user_id;
             $classId = $session->metadata->martial_arts_class_id;
             $package_type = $session->metadata->package_type ?? 'normal';
+            $selected_location = $session->metadata->selected_location ?? null;
             $isOneTime = isset($session->metadata->is_one_time) && $session->metadata->is_one_time == 'true';
             
             $class = MartialArtsClass::find($classId);
@@ -198,10 +214,11 @@ class SubscriptionController extends Controller
                     'user_id' => $userId,
                     'martial_arts_class_id' => $classId,
                     'package_type' => $package_type,
+                    'selected_location' => $selected_location,
                     'stripe_customer_id' => $session->customer ?? 'one_time',
                     'stripe_subscription_id' => 'payment_' . $session->payment_intent,
-                    'status' => 'active', // Valid for the duration of the pass
-                    'next_payment_date' => null, // No renewal
+                    'status' => 'active',
+                    'next_payment_date' => null,
                 ]);
                 $invoiceUrl = null; // No hosted invoice URL for standard payment intents usually
             } else {
@@ -212,6 +229,7 @@ class SubscriptionController extends Controller
                         'user_id' => $userId,
                         'martial_arts_class_id' => $classId,
                         'package_type' => $package_type,
+                        'selected_location' => $selected_location,
                         'stripe_customer_id' => $session->customer,
                         'status' => $session->subscription->status,
                         'next_payment_date' => Carbon::parse($session->subscription->current_period_end),
