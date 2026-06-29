@@ -13,6 +13,8 @@ let stripeKey = null;
 let stripeInstance = null;
 let stripeElements = null;
 let cardElement = null;
+let globalGstRate = parseFloat(KJS_CONFIG.gst_rate) || 0;
+let globalPstRate = parseFloat(KJS_CONFIG.pst_rate) || 0;
 
 // Global AJAX setup for API Key
 $.ajaxSetup({
@@ -35,7 +37,7 @@ const Cart = {
         let items = this.get();
         let idx = items.findIndex(i => i.id == product.id);
         if (idx > -1) { items[idx].quantity += qty; }
-        else { items.push({ id: product.id, name: product.name, price: parseFloat(product.sale_price || product.price), image_url: product.image_url, slug: product.slug, quantity: qty }); }
+        else { items.push({ id: product.id, name: product.name, price: parseFloat(product.sale_price || product.price), image_url: product.image_url, slug: product.slug, quantity: qty, is_tax_inclusive: product.is_tax_inclusive }); }
         this.save(items);
         showToast(product.name + ' added to cart!', 'success');
     },
@@ -50,6 +52,34 @@ const Cart = {
     },
     getTotal() {
         return this.get().reduce((sum, i) => sum + (i.price * i.quantity), 0);
+    },
+    calculateTaxInfo() {
+        let items = this.get();
+        let totalTaxRate = (globalGstRate + globalPstRate) / 100;
+        let subtotal = 0;
+        let gst = 0;
+        let pst = 0;
+        let total = 0;
+        items.forEach(i => {
+            let itemTotal = i.price * i.quantity;
+            let itemSub, itemGst, itemPst, itemFinal;
+            if (i.is_tax_inclusive) {
+                itemSub = itemTotal / (1 + totalTaxRate);
+                itemGst = itemSub * (globalGstRate / 100);
+                itemPst = itemSub * (globalPstRate / 100);
+                itemFinal = itemTotal;
+            } else {
+                itemSub = itemTotal;
+                itemGst = itemSub * (globalGstRate / 100);
+                itemPst = itemSub * (globalPstRate / 100);
+                itemFinal = itemSub + itemGst + itemPst;
+            }
+            subtotal += itemSub;
+            gst += itemGst;
+            pst += itemPst;
+            total += itemFinal;
+        });
+        return { subtotal, gst, pst, total };
     },
     count() { return this.get().reduce((sum, i) => sum + i.quantity, 0); },
     clear() { localStorage.removeItem(this.KEY); this.updateBadge(); },
@@ -173,7 +203,7 @@ window.kjsInitShop = function() {
                 html += '<div class="kjs-product-actions">';
                 html += '<a href="'+productUrl+'" class="kjs-btn kjs-btn-outline kjs-btn-sm">Details</a>';
                 if (p.stock > 0) {
-                    html += '<button class="kjs-btn kjs-btn-primary kjs-btn-sm kjs-add-cart" data-product=\''+JSON.stringify({id:p.id,name:p.name,price:p.price,sale_price:p.sale_price,image_url:p.image_url,slug:p.slug})+'\'> <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg> Add</button>';
+                    html += '<button class="kjs-btn kjs-btn-primary kjs-btn-sm kjs-add-cart" data-product=\''+JSON.stringify({id:p.id,name:p.name,price:p.price,sale_price:p.sale_price,image_url:p.image_url,slug:p.slug,is_tax_inclusive:p.is_tax_inclusive})+'\'> <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg> Add</button>';
                 } else {
                     html += '<button class="kjs-btn kjs-btn-sm disabled">Out of Stock</button>';
                 }
@@ -242,7 +272,7 @@ window.kjsInitProductDetail = function() {
         if (p.description) html += '<div class="kjs-detail-desc">'+p.description+'</div>';
         if (p.stock > 0) {
             html += '<div class="kjs-qty-selector"><button onclick="kjsQty(-1)">−</button><input type="number" id="kjs-detail-qty" value="1" min="1" max="'+p.stock+'"><button onclick="kjsQty(1)">+</button></div>';
-            html += '<button class="kjs-btn kjs-btn-primary kjs-btn-lg" id="kjs-detail-add" data-product=\''+JSON.stringify({id:p.id,name:p.name,price:p.price,sale_price:p.sale_price,image_url:p.image_url,slug:p.slug})+'\'><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg> Add to Cart</button>';
+            html += '<button class="kjs-btn kjs-btn-primary kjs-btn-lg" id="kjs-detail-add" data-product=\''+JSON.stringify({id:p.id,name:p.name,price:p.price,sale_price:p.sale_price,image_url:p.image_url,slug:p.slug,is_tax_inclusive:p.is_tax_inclusive})+'\'><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg> Add to Cart</button>';
         }
         html += '</div></div>';
 
@@ -286,7 +316,9 @@ window.kjsQty = function(delta) {
 /* ══════════════════════════════════════
    CART PAGE
    ══════════════════════════════════════ */
-window.kjsInitCart = function() { renderCart(); };
+window.kjsInitCart = function() { 
+    renderCart();
+};
 
 function renderCart() {
     let items = Cart.get();
@@ -308,11 +340,18 @@ function renderCart() {
     cartHtml += '</div></div>';
 
     // Summary
+    let taxInfo = Cart.calculateTaxInfo();
     cartHtml += '<div class="kjs-card kjs-summary-card"><div class="kjs-card-body">';
     cartHtml += '<h3>Order Summary</h3>';
-    cartHtml += '<div class="kjs-summary-row"><span>Subtotal ('+Cart.count()+' items)</span><span>'+formatPrice(Cart.getTotal())+'</span></div>';
+    cartHtml += '<div class="kjs-summary-row"><span>Subtotal ('+Cart.count()+' items)</span><span>'+formatPrice(taxInfo.subtotal)+'</span></div>';
+    if (globalGstRate > 0) {
+        cartHtml += '<div class="kjs-summary-row"><span>GST ('+globalGstRate+'%)</span><span>'+formatPrice(taxInfo.gst)+'</span></div>';
+    }
+    if (globalPstRate > 0) {
+        cartHtml += '<div class="kjs-summary-row"><span>PST ('+globalPstRate+'%)</span><span>'+formatPrice(taxInfo.pst)+'</span></div>';
+    }
     cartHtml += '<div class="kjs-summary-row"><span>Delivery</span><span class="kjs-free">Free</span></div>';
-    cartHtml += '<div class="kjs-summary-row total"><span>Total</span><span>'+formatPrice(Cart.getTotal())+'</span></div>';
+    cartHtml += '<div class="kjs-summary-row total"><span>Total</span><span>'+formatPrice(taxInfo.total)+'</span></div>';
     cartHtml += '<a href="'+PAGES.checkout+'" class="kjs-btn kjs-btn-primary kjs-btn-block kjs-btn-lg" style="margin-top:16px">Proceed to Checkout</a>';
     cartHtml += '<a href="'+PAGES.shop+'" class="kjs-btn kjs-btn-outline kjs-btn-block" style="margin-top:8px">Continue Shopping</a>';
     cartHtml += '</div></div></div>';
@@ -339,13 +378,18 @@ window.kjsInitCheckout = function() {
 
     let currentStep = 0;
 
-    // Load Stripe key from Laravel API
-    $.get(API + '/config', function(res) {
-        if (res.success && res.stripe_key) {
-            stripeKey = res.stripe_key;
-            // Auto-init Stripe if card payment is pre-selected
-            if ($('input[name="kjs_payment"]:checked').val() === 'stripe') {
-                initStripeElements();
+    // Load Stripe key from Laravel API (tax rates already available from KJS_CONFIG)
+    $.ajax({
+        url: API + '/config',
+        method: 'GET',
+        cache: false,
+        success: function(res) {
+            if (res.success && res.stripe_key) {
+                stripeKey = res.stripe_key;
+                // Auto-init Stripe if card payment is pre-selected
+                if ($('input[name="kjs_payment"]:checked').val() === 'stripe') {
+                    initStripeElements();
+                }
             }
         }
     });
@@ -387,12 +431,21 @@ window.kjsInitCheckout = function() {
     }
 
     function renderCheckoutSummary() {
+        let taxInfo = Cart.calculateTaxInfo();
         let html = '<h3>Order Summary</h3>';
         items.forEach(i => {
             html += '<div class="kjs-summary-row"><span>'+i.name+' × '+i.quantity+'</span><span>'+formatPrice(i.price*i.quantity)+'</span></div>';
         });
+        html += '<hr style="margin: 10px 0; border: 0; border-top: 1px solid #ddd;">';
+        html += '<div class="kjs-summary-row"><span>Subtotal</span><span>'+formatPrice(taxInfo.subtotal)+'</span></div>';
+        if (globalGstRate > 0) {
+            html += '<div class="kjs-summary-row"><span>GST ('+globalGstRate+'%)</span><span>'+formatPrice(taxInfo.gst)+'</span></div>';
+        }
+        if (globalPstRate > 0) {
+            html += '<div class="kjs-summary-row"><span>PST ('+globalPstRate+'%)</span><span>'+formatPrice(taxInfo.pst)+'</span></div>';
+        }
         html += '<div class="kjs-summary-row"><span>Delivery</span><span class="kjs-free">Free</span></div>';
-        html += '<div class="kjs-summary-row total"><span>Total</span><span>'+formatPrice(Cart.getTotal())+'</span></div>';
+        html += '<div class="kjs-summary-row total" style="margin-top: 10px"><span>Amount Payable</span><span>'+formatPrice(taxInfo.total)+'</span></div>';
         $('#kjs-checkout-summary').html(html);
     }
 

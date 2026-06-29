@@ -19,10 +19,15 @@ class WpShopApiController extends Controller
      */
     public function config()
     {
+        $gstSetting = \App\Models\SiteSetting::where('key', 'gst_percentage')->first();
+        $pstSetting = \App\Models\SiteSetting::where('key', 'pst_percentage')->first();
+
         return response()->json([
             'success'    => true,
             'stripe_key' => env('STRIPE_KEY'),
             'currency'   => 'usd',
+            'gst_rate'   => $gstSetting ? floatval($gstSetting->value) : 0,
+            'pst_rate'   => $pstSetting ? floatval($pstSetting->value) : 0,
         ]);
     }
 
@@ -88,6 +93,7 @@ class WpShopApiController extends Controller
         $products->getCollection()->transform(function ($product) {
             $product->image_url = $product->image ? asset($product->image) : null;
             $product->display_price = $product->display_price;
+            $product->is_tax_inclusive = (bool)$product->is_tax_inclusive;
             return $product;
         });
 
@@ -119,6 +125,7 @@ class WpShopApiController extends Controller
 
         $product->image_url  = $product->image ? asset($product->image) : null;
         $product->all_images = $allImages;
+        $product->is_tax_inclusive = (bool)$product->is_tax_inclusive;
 
         // Related products (same category)
         $related = Product::active()
@@ -128,6 +135,7 @@ class WpShopApiController extends Controller
             ->get()
             ->map(function ($p) {
                 $p->image_url = $p->image ? asset($p->image) : null;
+                $p->is_tax_inclusive = (bool)$p->is_tax_inclusive;
                 return $p;
             });
 
@@ -186,8 +194,13 @@ class WpShopApiController extends Controller
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        // Calculate total from actual DB prices (not client-sent prices for security)
         $total = 0;
+        $gstSetting = \App\Models\SiteSetting::where('key', 'gst_percentage')->first();
+        $pstSetting = \App\Models\SiteSetting::where('key', 'pst_percentage')->first();
+        $gstRate = $gstSetting ? floatval($gstSetting->value) : 0;
+        $pstRate = $pstSetting ? floatval($pstSetting->value) : 0;
+        $totalTaxRate = ($gstRate + $pstRate) / 100;
+
         foreach ($request->items as $item) {
             $product = Product::find($item['product_id']);
             if (!$product || $product->status !== 'active') {
@@ -197,7 +210,19 @@ class WpShopApiController extends Controller
                 return response()->json(['success' => false, 'message' => "{$product->name} is out of stock."], 400);
             }
             $price = $product->sale_price ?? $product->price;
-            $total += $price * $item['quantity'];
+            $itemTotal = $price * $item['quantity'];
+
+            if ($product->is_tax_inclusive) {
+                $subtotal = $itemTotal / (1 + $totalTaxRate);
+                $gstAmount = $subtotal * ($gstRate / 100);
+                $pstAmount = $subtotal * ($pstRate / 100);
+                $total += $itemTotal;
+            } else {
+                $subtotal = $itemTotal;
+                $gstAmount = $subtotal * ($gstRate / 100);
+                $pstAmount = $subtotal * ($pstRate / 100);
+                $total += $subtotal + $gstAmount + $pstAmount;
+            }
         }
 
         if ($total <= 0) {
@@ -259,8 +284,17 @@ class WpShopApiController extends Controller
         }
 
         // Calculate total from DB prices (secure)
+        $cartSubtotal = 0;
+        $cartGstAmount = 0;
+        $cartPstAmount = 0;
         $cartTotal = 0;
         $orderItems = [];
+        
+        $gstSetting = \App\Models\SiteSetting::where('key', 'gst_percentage')->first();
+        $pstSetting = \App\Models\SiteSetting::where('key', 'pst_percentage')->first();
+        $gstRate = $gstSetting ? floatval($gstSetting->value) : 0;
+        $pstRate = $pstSetting ? floatval($pstSetting->value) : 0;
+        $totalTaxRate = ($gstRate + $pstRate) / 100;
 
         foreach ($request->items as $item) {
             $product = Product::find($item['product_id']);
@@ -273,7 +307,23 @@ class WpShopApiController extends Controller
 
             $price = $product->sale_price ?? $product->price;
             $itemTotal = $price * $item['quantity'];
-            $cartTotal += $itemTotal;
+            
+            if ($product->is_tax_inclusive) {
+                $subtotal = $itemTotal / (1 + $totalTaxRate);
+                $gstAmount = $subtotal * ($gstRate / 100);
+                $pstAmount = $subtotal * ($pstRate / 100);
+                $total = $itemTotal;
+            } else {
+                $subtotal = $itemTotal;
+                $gstAmount = $subtotal * ($gstRate / 100);
+                $pstAmount = $subtotal * ($pstRate / 100);
+                $total = $subtotal + $gstAmount + $pstAmount;
+            }
+
+            $cartSubtotal += $subtotal;
+            $cartGstAmount += $gstAmount;
+            $cartPstAmount += $pstAmount;
+            $cartTotal += $total;
 
             $orderItems[] = [
                 'product_id'   => $product->id,
@@ -311,7 +361,10 @@ class WpShopApiController extends Controller
             'guest_name'           => $request->guest_name,
             'guest_email'          => $request->guest_email,
             'guest_phone'          => $request->guest_phone,
-            'total_amount'         => $cartTotal,
+            'total_amount'         => round($cartTotal, 2),
+            'subtotal'             => round($cartSubtotal, 2),
+            'gst_amount'           => round($cartGstAmount, 2),
+            'pst_amount'           => round($cartPstAmount, 2),
             'status'               => $request->payment_method === 'stripe' ? 'processing' : 'pending',
             'payment_method'       => $request->payment_method,
             'payment_status'       => $paymentStatus,
