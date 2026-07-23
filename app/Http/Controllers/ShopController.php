@@ -352,6 +352,7 @@ class ShopController extends Controller
 
         // COD: Clear cart and redirect
         session()->forget('cart');
+        \App\Services\MailNotificationService::sendOrderConfirmation($order->id);
 
         return redirect()->route('shop.order.success', $order->id);
     }
@@ -378,6 +379,9 @@ class ShopController extends Controller
             ]);
 
             session()->forget('cart');
+
+            // Send Order Confirmation Emails (Customer & Admin)
+            \App\Services\MailNotificationService::sendOrderConfirmation($order->id);
 
             return redirect()->route('shop.order.success', $order->id);
         } catch (\Exception $e) {
@@ -412,7 +416,9 @@ class ShopController extends Controller
                 $cart,
                 $order->id,
                 route('shop.stripe.success'),
-                route('user.orders') // return to orders list on cancel
+                route('user.orders'), // return to orders list on cancel
+                round($order->gst_amount ?? 0, 2),
+                round($order->pst_amount ?? 0, 2)
             );
 
             $order->update(['stripe_session_id' => $session->id]);

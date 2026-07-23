@@ -248,6 +248,9 @@ class SubscriptionController extends Controller
                 'status' => 'succeeded',
             ]);
 
+            // Send Subscription Confirmation Emails (Customer & Admin)
+            \App\Services\MailNotificationService::sendSubscriptionConfirmation($subscription->id);
+
             // Increment coupon usage
             if (session()->has('pending_subscription_coupon')) {
                 \App\Models\DiscountCoupon::where('id', session('pending_subscription_coupon'))->increment('used_count');

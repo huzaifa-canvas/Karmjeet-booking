@@ -110,11 +110,11 @@ $(function () {
       }
       addToCart.text('View In Cart').removeClass('add-to-cart').addClass('view-in-cart');
       $this.attr('href', checkout);
-      toastr['success']('', 'Added Item In Your Cart 🛒', {
+      /* toastr['success']('', 'Added Item In Your Cart 🛒', {
         closeButton: true,
         tapToDismiss: false,
         rtl: isRTL
-      });
+      }); */
     });
   }
 

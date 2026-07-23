@@ -381,33 +381,110 @@
 
                 @if (auth()->user()->user_role == "user")
 
-                    <section id="dashboard-ecommerce">
+                    <section id="dashboard-user">
+                        <!-- Top Statistics Row -->
                         <div class="row match-height">
-                            <!-- Medal Card -->
-                            <div class="col-xl-5 col-md-5 col-12">
-                                <div class="card card-congratulation-medal">
+                            <div class="col-xl-3 col-sm-6 col-12 mb-2">
+                                <div class="card card-statistics h-100">
                                     <div class="card-body">
-                                        <h5>Congratulations 🎉 {{ auth()->user()->name }}</h5>
-                                        <p class="card-text font-small-3">Your Total Payments</p>
-                                        <h3 class="mb-75 mt-2 pt-50">
-                                            <a href="#">${{ $totalPayment }}</a>
+                                        <div class="d-flex flex-row align-items-center">
+                                            <div class="avatar bg-light-success p-50 me-2">
+                                                <div class="avatar-content">
+                                                    <i data-feather="check-circle" class="font-medium-5"></i>
+                                                </div>
+                                            </div>
+                                            <div class="my-auto">
+                                                <h4 class="fw-bolder mb-0">{{ $activeSubscriptions }}</h4>
+                                                <p class="card-text font-small-3 mb-0 text-muted">Active Subscriptions</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-3 col-sm-6 col-12 mb-2">
+                                <div class="card card-statistics h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex flex-row align-items-center">
+                                            <div class="avatar bg-light-primary p-50 me-2">
+                                                <div class="avatar-content">
+                                                    <i data-feather="shopping-bag" class="font-medium-5"></i>
+                                                </div>
+                                            </div>
+                                            <div class="my-auto">
+                                                <h4 class="fw-bolder mb-0">{{ $totalOrders }}</h4>
+                                                <p class="card-text font-small-3 mb-0 text-muted">Total Orders</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-3 col-sm-6 col-12 mb-2">
+                                <div class="card card-statistics h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex flex-row align-items-center">
+                                            <div class="avatar bg-light-info p-50 me-2">
+                                                <div class="avatar-content">
+                                                    <i data-feather="calendar" class="font-medium-5"></i>
+                                                </div>
+                                            </div>
+                                            <div class="my-auto">
+                                                <h4 class="fw-bolder mb-0">{{ $currentMonthOrders }}</h4>
+                                                <p class="card-text font-small-3 mb-0 text-muted">Orders This Month</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-3 col-sm-6 col-12 mb-2">
+                                <div class="card card-statistics h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex flex-row align-items-center">
+                                            <div class="avatar bg-light-warning p-50 me-2">
+                                                <div class="avatar-content">
+                                                    <i data-feather="dollar-sign" class="font-medium-5"></i>
+                                                </div>
+                                            </div>
+                                            <div class="my-auto">
+                                                <h4 class="fw-bolder mb-0">${{ number_format($totalPayment, 2) }}</h4>
+                                                <p class="card-text font-small-3 mb-0 text-muted">Total Paid</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- User Highlights & Earnings Cards -->
+                        <div class="row match-height">
+                            <!-- Medal / Welcome Card -->
+                            <div class="col-xl-6 col-md-6 col-12 mb-2">
+                                <div class="card card-congratulation-medal h-100">
+                                    <div class="card-body">
+                                        <h5>Welcome back 🎉 {{ auth()->user()->name }}</h5>
+                                        <p class="card-text font-small-3">Lifetime Spent on Platform</p>
+                                        <h3 class="mb-75 mt-2 pt-50 text-primary">
+                                            ${{ number_format($totalPayment, 2) }}
                                         </h3>
-                                        {{-- <button type="button" class="btn btn-primary">View Sales</button> --}}
+                                        <a href="{{ route('user.orders') }}" class="btn btn-primary btn-sm">View My Orders</a>
                                         <img src="{{ asset('/') }}app-assets/images/illustration/badge.svg" class="congratulation-medal" alt="Medal Pic" />
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="col-lg-5 col-md-5 col-12">
-                                <div class="card earnings-card">
+                            <!-- Monthly Spending Card -->
+                            <div class="col-xl-6 col-md-6 col-12 mb-2">
+                                <div class="card earnings-card h-100">
                                     <div class="card-body">
-                                        <div class="row">
+                                        <div class="row h-100 align-items-center">
                                             <div class="col-6">
-                                                <h4 class="card-title mb-1">Payments</h4>
-                                                <div class="font-small-2">This Month</div>
-                                                <h5 class="mb-1">${{ $curentMonthPayment }}</h5>
+                                                <h4 class="card-title mb-1">Monthly Spend</h4>
+                                                <div class="font-small-2 text-muted">This Month</div>
+                                                <h4 class="mb-1 text-success fw-bolder">${{ number_format($curentMonthPayment, 2) }}</h4>
                                                 <p class="card-text text-muted font-small-2">
-                                                    <span class="fw-bolder">${{ $lastMonthPayment }}</span><span> Payments last month.</span>
+                                                    <span class="fw-bolder">${{ number_format($lastMonthPayment, 2) }}</span><span> spent last month.</span>
                                                 </p>
                                             </div>
                                             <div class="col-6">
@@ -417,45 +494,105 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="col-lg-2 col-md-3 col-6">
-                                <div class="card">
-                                    <div class="card-body pb-50">
-                                        <h6>Total Sessions</h6>
-                                        <h2 class="fw-bolder mb-1">{{ $session }}</h2>
-                                        <div id="statistics-order-chart"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!--/ Medal Card -->
                         </div>
 
-                        <div class="row match-height">
-                            <!-- Revenue Report Card -->
-                            <div class="col-lg-12 col-12">
-                                <div class="card card-revenue-budget">
-                                    <div class="row mx-0">
-                                        <div class="col-md-12 col-12 revenue-report-wrapper">
-                                            <div class="d-sm-flex justify-content-between align-items-center mb-3">
-                                                <h4 class="card-title mb-50 mb-sm-0">Bookings Report</h4>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="d-flex align-items-center me-2">
-                                                        <span class="bullet bullet-primary font-small-3 me-50 cursor-pointer"></span>
-                                                        <span>Bookings</span>
-                                                    </div>
-                                                    <div class="d-flex align-items-center ms-75">
-                                                        <span class="bullet bullet-warning font-small-3 me-50 cursor-pointer"></span>
-                                                        <span>Payments</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div id="booking-chart"></div>
-                                        </div>
-
+                        <!-- Recent Orders & Active Subscriptions Tables Row -->
+                        <div class="row match-height mb-2">
+                            <!-- Recent Orders Table -->
+                            <div class="col-lg-6 col-12 mb-2">
+                                <div class="card h-100">
+                                    <div class="card-header d-flex justify-content-between align-items-center border-bottom">
+                                        <h4 class="card-title mb-0"><i data-feather="shopping-cart" class="me-50 text-primary"></i> Recent Shop Orders</h4>
+                                        <a href="{{ route('user.orders') }}" class="btn btn-outline-primary btn-sm">View All</a>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Order #</th>
+                                                    <th>Date</th>
+                                                    <th>Status</th>
+                                                    <th>Total</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse($recentOrders as $ord)
+                                                    <tr>
+                                                        <td><span class="fw-bolder">#{{ $ord->order_number }}</span></td>
+                                                        <td>{{ $ord->created_at->format('M d, Y') }}</td>
+                                                        <td>
+                                                            @if($ord->payment_status == 'paid')
+                                                                <span class="badge rounded-pill bg-light-success text-success">Paid</span>
+                                                            @elseif($ord->payment_status == 'pending')
+                                                                <span class="badge rounded-pill bg-light-warning text-warning">Pending</span>
+                                                            @else
+                                                                <span class="badge rounded-pill bg-light-danger text-danger">{{ ucfirst($ord->payment_status ?? 'Unpaid') }}</span>
+                                                            @endif
+                                                        </td>
+                                                        <td class="fw-bold">${{ number_format($ord->total_amount, 2) }}</td>
+                                                        <td>
+                                                            @if($ord->payment_status == 'pending')
+                                                                <a href="{{ route('user.order.pay', $ord->id) }}" class="btn btn-sm btn-primary py-25 px-50">Pay Now</a>
+                                                            @else
+                                                                <a href="{{ route('user.order.details', $ord->id) }}" class="btn btn-sm btn-outline-secondary py-25 px-50">View</a>
+                                                            @endif
+                                                        </td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="5" class="text-center text-muted py-2">No recent shop orders found.</td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
-                            <!--/ Revenue Report Card -->
+
+                            <!-- Active Subscriptions Table -->
+                            <div class="col-lg-6 col-12 mb-2">
+                                <div class="card h-100">
+                                    <div class="card-header d-flex justify-content-between align-items-center border-bottom">
+                                        <h4 class="card-title mb-0"><i data-feather="award" class="me-50 text-success"></i> My Subscriptions</h4>
+                                        <a href="{{ route('user.subscription.list') }}" class="btn btn-outline-success btn-sm">Manage</a>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Class / Plan</th>
+                                                    <th>Package</th>
+                                                    <th>Status</th>
+                                                    <th>Next Billing</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse($userSubscriptionsList as $sub)
+                                                    <tr>
+                                                        <td class="fw-bolder">{{ $sub->martialArtsClass->name ?? 'Membership Plan' }}</td>
+                                                        <td><span class="badge bg-light-info text-info">{{ ucfirst($sub->package_type ?? 'Standard') }}</span></td>
+                                                        <td>
+                                                            @if($sub->status == 'active')
+                                                                <span class="badge rounded-pill bg-light-success text-success">Active</span>
+                                                            @elseif($sub->status == 'canceled')
+                                                                <span class="badge rounded-pill bg-light-danger text-danger">Canceled</span>
+                                                            @else
+                                                                <span class="badge rounded-pill bg-light-warning text-warning">{{ ucfirst($sub->status) }}</span>
+                                                            @endif
+                                                        </td>
+                                                        <td>{{ $sub->next_payment_date ? \Carbon\Carbon::parse($sub->next_payment_date)->format('M d, Y') : 'N/A' }}</td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="4" class="text-center text-muted py-2">No active subscriptions found.</td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </section>
 

@@ -98,35 +98,14 @@ add_action('wp_enqueue_scripts', function () {
     // Plugin JS
     wp_enqueue_script('kjs-script', KJS_URL . 'assets/js/karmjeet-shop.js', ['jquery'], KJS_VERSION, true);
 
-    // Fetch tax rates from Laravel API (server-side, no CORS issues)
-    $api_base = rtrim(get_option('kjs_api_url', 'http://localhost'), '/') . '/api/wp-shop';
-    $api_key  = get_option('kjs_api_key', '');
-    $gst_rate = 0;
-    $pst_rate = 0;
-
-    $config_response = wp_remote_get($api_base . '/config', [
-        'headers' => ['X-API-Key' => $api_key],
-        'timeout' => 5,
-    ]);
-
-    if (!is_wp_error($config_response)) {
-        $config_body = json_decode(wp_remote_retrieve_body($config_response), true);
-        if (!empty($config_body['success'])) {
-            $gst_rate = floatval($config_body['gst_rate'] ?? 0);
-            $pst_rate = floatval($config_body['pst_rate'] ?? 0);
-        }
-    }
-
     // Pass config to JS
     wp_localize_script('kjs-script', 'KJS_CONFIG', [
-        'api_url'    => $api_base,
-        'image_path' => rtrim(get_option('kjs_api_url', 'http://localhost'), '/'),
-        'api_key'    => $api_key,
-        'site_url'   => home_url(),
-        'ajax_url'   => admin_url('admin-ajax.php'),
-        'nonce'      => wp_create_nonce('kjs_nonce'),
-        'gst_rate'   => $gst_rate,
-        'pst_rate'   => $pst_rate,
+        'api_url'  => rtrim(get_option('kjs_api_url', 'http://localhost'), '/') . '/api/wp-shop',
+        'image_path'  => rtrim(get_option('kjs_api_url', 'http://localhost'), '/'),
+        'api_key'  => get_option('kjs_api_key', ''),
+        'site_url' => home_url(),
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'nonce'    => wp_create_nonce('kjs_nonce'),
         // Page URLs (auto-detected from shortcode pages or customizable)
         'pages'    => [
             'shop'          => kjs_get_page_url('karmjeet_shop'),

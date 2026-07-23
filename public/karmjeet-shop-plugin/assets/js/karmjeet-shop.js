@@ -13,8 +13,8 @@ let stripeKey = null;
 let stripeInstance = null;
 let stripeElements = null;
 let cardElement = null;
-let globalGstRate = parseFloat(KJS_CONFIG.gst_rate) || 0;
-let globalPstRate = parseFloat(KJS_CONFIG.pst_rate) || 0;
+let globalGstRate = 0;
+let globalPstRate = 0;
 
 // Global AJAX setup for API Key
 $.ajaxSetup({
@@ -317,7 +317,21 @@ window.kjsQty = function(delta) {
    CART PAGE
    ══════════════════════════════════════ */
 window.kjsInitCart = function() { 
-    renderCart();
+    $.ajax({
+        url: API + '/config',
+        method: 'GET',
+        cache: false,
+        success: function(res) {
+            if (res.success) {
+                globalGstRate = parseFloat(res.gst_rate) || 0;
+                globalPstRate = parseFloat(res.pst_rate) || 0;
+                renderCart();
+            }
+        },
+        error: function() {
+            renderCart(); // Fallback
+        }
+    });
 };
 
 function renderCart() {
@@ -378,14 +392,17 @@ window.kjsInitCheckout = function() {
 
     let currentStep = 0;
 
-    // Load Stripe key from Laravel API (tax rates already available from KJS_CONFIG)
+    // Load Stripe key from Laravel API
     $.ajax({
         url: API + '/config',
         method: 'GET',
         cache: false,
         success: function(res) {
-            if (res.success && res.stripe_key) {
+            if (res.success) {
                 stripeKey = res.stripe_key;
+                globalGstRate = parseFloat(res.gst_rate) || 0;
+                globalPstRate = parseFloat(res.pst_rate) || 0;
+                renderCheckoutSummary(); // re-render now that we have tax rates
                 // Auto-init Stripe if card payment is pre-selected
                 if ($('input[name="kjs_payment"]:checked').val() === 'stripe') {
                     initStripeElements();

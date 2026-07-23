@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Blog;
 use App\Models\Coaching;
 use App\Models\Courses;
+use App\Models\Order;
 use App\Models\Poadcast;
 use App\Models\ScheduleSession;
 use App\Models\SessionBooking;
+use App\Models\Subscription;
+use App\Models\SubscriptionPayment;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -48,9 +51,6 @@ class HomeController extends Controller
 
             $curentMonthEarning = SessionBooking::where('coach_id', $user->id)->whereMonth('created_at', Carbon::now()->month)->get()->sum('price_per_session');
             $lastMonthEarning = SessionBooking::where('coach_id', $user->id)->whereMonth('created_at', Carbon::now()->subMonth()->month)->get()->sum('price_per_session');
-            // $curentMonthEarning = SessionBooking::where('coach_id', $user->id)->where('payment_status','success')->whereMonth('created_at', Carbon::now()->month)->get()->sum('price_per_session');
-            // $lastMonthEarning = SessionBooking::where('coach_id', $user->id)->where('payment_status','success')->whereMonth('created_at', Carbon::now()->subMonth()->month)->get()->sum('price_per_session');
-            // dd($lastMonthEarning);
             return view('modules.admin.dashboard.index',compact('session', 'sessionBooking', 'totalearning', 'bookingChartData', 'revenueChatData', 'curentMonthEarning', 'lastMonthEarning'));
         }
 
@@ -59,6 +59,41 @@ class HomeController extends Controller
             $session = SessionBooking::where('user_id', $user->id)->count();
             $sessionBooking = SessionBooking::where('user_id', $user->id)->count();
 
+            // 1. Active Subscriptions
+            $activeSubscriptions = Subscription::filterStatus('active')->where('user_id', $user->id)->count();
+
+            // 2. Total Orders & 3. Current Month Orders
+            $totalOrders = Order::where('user_id', $user->id)->count();
+            $currentMonthOrders = Order::where('user_id', $user->id)
+                ->whereMonth('created_at', Carbon::now()->month)
+                ->whereYear('created_at', Carbon::now()->year)
+                ->count();
+
+            // 4. Total Amount Paid so far across site (Shop orders + Sessions + Subscriptions)
+            $paidShopOrders = Order::where('user_id', $user->id)->where('payment_status', 'paid')->sum('total_amount');
+            $paidSessionBookings = SessionBooking::where('user_id', $user->id)->sum('price_per_session');
+            $paidSubscriptionPayments = SubscriptionPayment::whereHas('subscription', function($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })->sum('amount');
+
+            $totalPayment = $paidShopOrders + $paidSessionBookings + $paidSubscriptionPayments;
+
+            // Payments in current & last month
+            $curentMonthShopOrders = Order::where('user_id', $user->id)->where('payment_status', 'paid')
+                ->whereMonth('created_at', Carbon::now()->month)
+                ->whereYear('created_at', Carbon::now()->year)
+                ->sum('total_amount');
+            $curentMonthBookings = SessionBooking::where('user_id', $user->id)
+                ->whereMonth('created_at', Carbon::now()->month)
+                ->whereYear('created_at', Carbon::now()->year)
+                ->sum('price_per_session');
+            $curentMonthPayment = $curentMonthShopOrders + $curentMonthBookings;
+
+            $lastMonthPayment = SessionBooking::where('user_id', $user->id)
+                ->whereMonth('created_at', Carbon::now()->subMonth()->month)
+                ->sum('price_per_session');
+
+            // Monthly chart data
             $bookingCountPerMonth = SessionBooking::where('user_id', $user->id)->get()->groupBy(function($val) {
                 return Carbon::parse($val->created_at)->format('YM');
             });
@@ -66,21 +101,33 @@ class HomeController extends Controller
             $montsName = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             $currentYear = date('Y');
 
+            $bookingChartData = [];
+            $revenueChatData = [];
             foreach ($montsName as $key => $value) {
-            $bookingChartData[] = (isset($bookingCountPerMonth[$currentYear.$value]) ? $bookingCountPerMonth[$currentYear.$value]->count() : 0);
-            $revenueChatData[] = (isset($bookingCountPerMonth[$currentYear.$value]) ? $bookingCountPerMonth[$currentYear.$value]->sum('price_per_session') : 0);
+                $bookingChartData[] = (isset($bookingCountPerMonth[$currentYear.$value]) ? $bookingCountPerMonth[$currentYear.$value]->count() : 0);
+                $revenueChatData[] = (isset($bookingCountPerMonth[$currentYear.$value]) ? $bookingCountPerMonth[$currentYear.$value]->sum('price_per_session') : 0);
             }
 
-            // $totalPayment = SessionBooking::where('user_id', $user->id)->where('payment_status','success')->sum('price_per_session');
-            $totalPayment = SessionBooking::where('user_id', $user->id)->sum('price_per_session');
-            $curentMonthPayment = SessionBooking::where('user_id', $user->id)->whereMonth('created_at', Carbon::now()->month)->get()->sum('price_per_session');
-            // $curentMonthPayment = SessionBooking::where('user_id', $user->id)->where('payment_status','success')->whereMonth('created_at', Carbon::now()->month)->get()->sum('price_per_session');
-            // $lastMonthPayment = SessionBooking::where('user_id', $user->id)->where('payment_status','success')->whereMonth('created_at', Carbon::now()->subMonth()->month)->get()->sum('price_per_session');
-            $lastMonthPayment = SessionBooking::where('user_id', $user->id)->whereMonth('created_at', Carbon::now()->subMonth()->month)->get()->sum('price_per_session');
+            // Recent Lists for User Dashboard
+            $recentOrders = Order::with('items')->where('user_id', $user->id)->latest()->take(5)->get();
+            $userSubscriptionsList = Subscription::with('martialArtsClass')->where('user_id', $user->id)->latest()->take(5)->get();
+            $recentBookings = SessionBooking::where('user_id', $user->id)->latest()->take(5)->get();
 
-
-            // dd($lastMonthpPayment);
-            return view('modules.admin.dashboard.index',compact('sessionBooking', 'totalPayment', 'bookingChartData', 'revenueChatData', 'curentMonthPayment', 'lastMonthPayment', 'session', 'sessionBooking'));
+            return view('modules.admin.dashboard.index', compact(
+                'session',
+                'sessionBooking',
+                'activeSubscriptions',
+                'totalOrders',
+                'currentMonthOrders',
+                'totalPayment',
+                'curentMonthPayment',
+                'lastMonthPayment',
+                'bookingChartData',
+                'revenueChatData',
+                'recentOrders',
+                'userSubscriptionsList',
+                'recentBookings'
+            ));
         }
     }
 

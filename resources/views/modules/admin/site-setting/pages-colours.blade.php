@@ -57,6 +57,17 @@
                                                 <input type="number" step="0.01" class="form-control" name="tax[pst_percentage]" value="{{ $pstVal }}" placeholder="e.g. 7">
                                             </div>
 
+                                            {{-- Email Notification Settings --}}
+                                            <div class="col-12 mb-2 mt-2">
+                                                <h3 class="border-bottom pb-1">Email Notification Settings</h3>
+                                            </div>
+                                            <div class="col-md-12 col-12 mb-3">
+                                                <label class="form-label fw-bold">Admin Receiving Email (Order & Subscription Notifications)</label>
+                                                @php $adminEmailVal = isset($settingData['email']) ? $settingData['email']->where('key', 'admin_notification_email')->first()->value ?? '' : ''; @endphp
+                                                <input type="email" class="form-control" name="email[admin_notification_email]" value="{{ $adminEmailVal }}" placeholder="e.g. admin@yourdomain.com">
+                                                <small class="text-muted">All new order and subscription notification emails for the admin will be sent to this email address. If left empty, default admin email will be used.</small>
+                                            </div>
+
 
 
 
