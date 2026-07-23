@@ -392,6 +392,9 @@ class WpShopApiController extends Controller
             'address_type' => $request->address_type ?? 'home',
         ]);
 
+        // Send Order Confirmation Emails (Customer & Admin)
+        \App\Services\MailNotificationService::sendOrderConfirmation($order->id);
+
         return response()->json([
             'success' => true,
             'message' => 'Order placed successfully!',
