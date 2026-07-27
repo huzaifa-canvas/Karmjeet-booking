@@ -13,6 +13,8 @@ class Profile extends Model
         'user_id',
         'registration_type',
         'minor_full_name',
+        'email',
+        'kids_name',
         'guardian_name',
         'date_of_birth',
         'age',

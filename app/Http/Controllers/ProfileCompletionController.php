@@ -22,6 +22,9 @@ class ProfileCompletionController extends Controller
         $validated = $request->validate([
             'registration_type' => 'required|in:adult,minor',
             'minor_full_name' => 'required_if:registration_type,minor|nullable|string|max:255',
+            'email' => 'required|email|max:255',
+            'guardian_name' => 'nullable|string|max:255',
+            'kids_name' => 'nullable|string|max:255',
             'date_of_birth' => 'required|date',
             'age' => 'required|integer|min:0',
             'phone_number' => 'required|string|max:20',
@@ -81,6 +84,9 @@ class ProfileCompletionController extends Controller
             [
                 'registration_type' => $validated['registration_type'],
                 'minor_full_name' => $validated['minor_full_name'] ?? null,
+                'email' => $validated['email'],
+                'guardian_name' => $validated['guardian_name'] ?? null,
+                'kids_name' => $validated['kids_name'] ?? null,
                 'date_of_birth' => $validated['date_of_birth'],
                 'age' => $validated['age'],
                 'phone_number' => $validated['phone_number'],

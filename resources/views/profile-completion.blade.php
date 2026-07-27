@@ -60,6 +60,13 @@
                         @csrf
 
                         {{-- ============================================ --}}
+                        {{-- ID Check Required Notice --}}
+                        {{-- ============================================ --}}
+                        <div class="alert alert-light-danger mb-2" style="background-color: #fff0f0; border: 1px solid #dc3545;">
+                            <p class="mb-0 fw-bold" style="color: #dc3545; font-size: 1.05rem;">* ID check required - in class before enrollment</p>
+                        </div>
+
+                        {{-- ============================================ --}}
                         {{-- Registration Information --}}
                         {{-- ============================================ --}}
                         <div class="mb-3">
@@ -80,6 +87,30 @@
                                     <input type="text" name="minor_full_name" class="form-control" value="{{ old('minor_full_name') }}">
                                 </div>
                             </div>
+
+                            {{-- Email Field (visible for both Adult/Parent & Minor) --}}
+                            <div class="row">
+                                <div class="col-md-6 mb-1">
+                                    <label class="form-label">Email:</label>
+                                    <input type="email" name="email" class="form-control" required value="{{ old('email', auth()->user()->email) }}">
+                                    <small class="text-muted">Pre-filled with your registered email. You may change it if needed.</small>
+                                </div>
+                            </div>
+
+                            {{-- Parent/Guardian Name (shown when Adult/Parent Name selected) --}}
+                            <div id="adult_parent_fields" class="{{ old('registration_type', 'adult') == 'adult' ? '' : 'hidden' }}">
+                                <div class="row">
+                                    <div class="col-md-6 mb-1">
+                                        <label class="form-label">Parent Name / Guardian Name:</label>
+                                        <input type="text" name="guardian_name" class="form-control" value="{{ old('guardian_name') }}">
+                                    </div>
+                                    <div class="col-md-6 mb-1">
+                                        <label class="form-label">Kids Name:</label>
+                                        <input type="text" name="kids_name" class="form-control" value="{{ old('kids_name') }}">
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="row">
                                 <div class="col-md-4 mb-1">
                                     <label class="form-label">Date of Birth:</label>
@@ -509,10 +540,15 @@
 @section('scripts')
 <script>
     function toggleMinorField(show) {
-        const container = document.getElementById('minor_field_container');
-        container.classList.toggle('hidden', !show);
-        const inputs = container.querySelectorAll('input');
-        inputs.forEach(input => input.required = show);
+        // show = true means Minor is selected, false means Adult/Parent
+        const minorContainer = document.getElementById('minor_field_container');
+        minorContainer.classList.toggle('hidden', !show);
+        const minorInputs = minorContainer.querySelectorAll('input');
+        minorInputs.forEach(input => input.required = show);
+
+        // Toggle Adult/Parent fields (Parent/Guardian Name & Kids Name)
+        const adultFields = document.getElementById('adult_parent_fields');
+        adultFields.classList.toggle('hidden', show);
     }
 
     function toggleExpField(show) {

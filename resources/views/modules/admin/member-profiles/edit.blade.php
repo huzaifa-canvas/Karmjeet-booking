@@ -61,6 +61,18 @@
                                     <input type="text" name="minor_full_name" class="form-control" value="{{ old('minor_full_name', $p->minor_full_name) }}">
                                 </div>
                                 <div class="col-md-4 mb-1">
+                                    <label class="form-label">Email:</label>
+                                    <input type="email" name="email" class="form-control" value="{{ old('email', $p->email ?? $user->email) }}">
+                                </div>
+                                <div class="col-md-4 mb-1">
+                                    <label class="form-label">Parent Name / Guardian Name:</label>
+                                    <input type="text" name="guardian_name" class="form-control" value="{{ old('guardian_name', $p->guardian_name) }}">
+                                </div>
+                                <div class="col-md-4 mb-1">
+                                    <label class="form-label">Kids Name:</label>
+                                    <input type="text" name="kids_name" class="form-control" value="{{ old('kids_name', $p->kids_name) }}">
+                                </div>
+                                <div class="col-md-4 mb-1">
                                     <label class="form-label">Date of Birth:</label>
                                     <input type="date" name="date_of_birth" class="form-control" value="{{ old('date_of_birth', $p->date_of_birth?->format('Y-m-d')) }}" required>
                                 </div>

@@ -53,6 +53,20 @@
                                 </div>
                             @endif
                             <div class="col-md-4 mb-1">
+                                <strong class="d-block text-muted small">Email</strong>
+                                <span>{{ $p->email ?? $user->email }}</span>
+                            </div>
+                            @if($p->registration_type == 'adult')
+                                <div class="col-md-4 mb-1">
+                                    <strong class="d-block text-muted small">Parent Name / Guardian Name</strong>
+                                    <span>{{ $p->guardian_name ?? '—' }}</span>
+                                </div>
+                                <div class="col-md-4 mb-1">
+                                    <strong class="d-block text-muted small">Kids Name</strong>
+                                    <span>{{ $p->kids_name ?? '—' }}</span>
+                                </div>
+                            @endif
+                            <div class="col-md-4 mb-1">
                                 <strong class="d-block text-muted small">Date of Birth</strong>
                                 <span>{{ $p->date_of_birth?->format('d-M-Y') ?? '—' }}</span>
                             </div>
@@ -63,10 +77,6 @@
                             <div class="col-md-4 mb-1">
                                 <strong class="d-block text-muted small">Phone Number</strong>
                                 <span>{{ $p->phone_number ?? '—' }}</span>
-                            </div>
-                            <div class="col-md-4 mb-1">
-                                <strong class="d-block text-muted small">Email</strong>
-                                <span>{{ $user->email }}</span>
                             </div>
                         </div>
                     </div>
