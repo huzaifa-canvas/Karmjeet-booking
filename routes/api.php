@@ -41,3 +41,8 @@ Route::prefix('wp-shop')->middleware('wp_api')->group(function () {
     Route::post('create-payment-intent', [WpShopApiController::class, 'createPaymentIntent']);
     Route::post('place-order', [WpShopApiController::class, 'placeOrder']);
 });
+
+// =============================================
+// Stripe Webhook (No CSRF, No Auth)
+// =============================================
+Route::post('stripe/webhook', [\App\Http\Controllers\StripeWebhookController::class, 'handle'])->name('stripe.webhook');
