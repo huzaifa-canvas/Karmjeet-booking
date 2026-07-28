@@ -209,17 +209,22 @@ class SubscriptionController extends Controller
             $class = MartialArtsClass::find($classId);
 
             if ($isOneTime) {
-                // One-time payment (Passes)
-                $subscription = Subscription::create([
-                    'user_id' => $userId,
-                    'martial_arts_class_id' => $classId,
-                    'package_type' => $package_type,
-                    'selected_location' => $selected_location,
-                    'stripe_customer_id' => $session->customer ?? 'one_time',
-                    'stripe_subscription_id' => 'payment_' . $session->payment_intent,
-                    'status' => 'active',
-                    'next_payment_date' => null,
-                ]);
+                $stripeId = 'payment_' . $session->payment_intent;
+                $subscription = Subscription::where('stripe_subscription_id', $stripeId)->first();
+                
+                if (!$subscription) {
+                    // One-time payment (Passes)
+                    $subscription = Subscription::create([
+                        'user_id' => $userId,
+                        'martial_arts_class_id' => $classId,
+                        'package_type' => $package_type,
+                        'selected_location' => $selected_location,
+                        'stripe_customer_id' => $session->customer ?? 'one_time',
+                        'stripe_subscription_id' => $stripeId,
+                        'status' => 'active',
+                        'next_payment_date' => null,
+                    ]);
+                }
                 $invoiceUrl = null; // No hosted invoice URL for standard payment intents usually
             } else {
                 // Recurring Subscription
@@ -240,16 +245,24 @@ class SubscriptionController extends Controller
 
             // Record Payment
             $amountTotal = $session->amount_total / 100;
-            SubscriptionPayment::create([
-                'subscription_id' => $subscription->id,
-                'amount' => $amountTotal,
-                'stripe_payment_id' => $session->payment_intent ?? ($session->subscription->latest_invoice->payment_intent ?? null),
-                'stripe_invoice_url' => $invoiceUrl,
-                'status' => 'succeeded',
-            ]);
+            $paymentIntentId = $session->payment_intent ?? ($session->subscription->latest_invoice->payment_intent ?? null);
+            
+            $existingPayment = SubscriptionPayment::where('subscription_id', $subscription->id)
+                ->where('stripe_payment_id', $paymentIntentId)
+                ->first();
 
-            // Send Subscription Confirmation Emails (Customer & Admin)
-            \App\Services\MailNotificationService::sendSubscriptionConfirmation($subscription->id);
+            if (!$existingPayment && $amountTotal > 0) {
+                SubscriptionPayment::create([
+                    'subscription_id' => $subscription->id,
+                    'amount' => $amountTotal,
+                    'stripe_payment_id' => $paymentIntentId,
+                    'stripe_invoice_url' => $invoiceUrl,
+                    'status' => 'succeeded',
+                ]);
+
+                // Send Subscription Confirmation Emails (Customer & Admin)
+                \App\Services\MailNotificationService::sendSubscriptionConfirmation($subscription->id);
+            }
 
             // Increment coupon usage
             if (session()->has('pending_subscription_coupon')) {

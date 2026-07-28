@@ -463,4 +463,10 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
+
+// =============================================
+// Stripe Webhook
+// =============================================
+Route::post('stripe/webhook', [\App\Http\Controllers\StripeWebhookController::class, 'handle'])->name('stripe.webhook');
+
 require __DIR__.'/auth.php';
