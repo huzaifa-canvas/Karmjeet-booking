@@ -192,7 +192,7 @@ class SubscriptionController extends Controller
 
     public function success(Request $request)
     {
-        $sessionId = $request->get('session_id');
+        $sessionId = $request->get('session_token');
 
         if (!$sessionId) {
             return redirect()->route('user.schedule-session-list')->with(['status' => 'failed', 'message' => 'Invalid session.']);

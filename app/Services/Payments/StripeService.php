@@ -64,7 +64,7 @@ class StripeService
                 ],
                 'mode' => 'payment',
                 'customer_email' => $user->email,
-                'success_url' => $successUrl . '?session_id={CHECKOUT_SESSION_ID}',
+                'success_url' => $successUrl . '?session_token={CHECKOUT_SESSION_ID}',
                 'cancel_url' => $cancelUrl,
                 'metadata' => [
                     'user_id' => $user->id,
@@ -96,7 +96,7 @@ class StripeService
                 ],
                 'mode' => 'subscription',
                 'customer_email' => $user->email,
-                'success_url' => $successUrl . '?session_id={CHECKOUT_SESSION_ID}',
+                'success_url' => $successUrl . '?session_token={CHECKOUT_SESSION_ID}',
                 'cancel_url' => $cancelUrl,
                 'metadata' => [
                     'user_id' => $user->id,
@@ -285,7 +285,7 @@ class StripeService
             'line_items'           => $lineItems,
             'mode'                 => 'payment',
             'customer_email'       => $user->email,
-            'success_url'          => $successUrl . '?session_id={CHECKOUT_SESSION_ID}',
+            'success_url'          => $successUrl . '?session_token={CHECKOUT_SESSION_ID}',
             'cancel_url'           => $cancelUrl,
             'metadata'             => [
                 'user_id'  => $user->id,
