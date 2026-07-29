@@ -462,5 +462,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('cart/data', [\App\Http\Controllers\ShopController::class, 'getCartData'])->name('cart.data');
 });
 
+// =============================================
+// Coming Soon Page
+// =============================================
+Route::get('/coming-soon', function () {
+    return view('coming-soon');
+})->name('coming.soon');
+
 
 require __DIR__.'/auth.php';
