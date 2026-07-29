@@ -466,6 +466,9 @@ Route::middleware(['auth'])->group(function () {
 // Coming Soon Page
 // =============================================
 Route::get('/coming-soon', function () {
+    if (!env('APP_COMING_SOON', false)) {
+        return redirect('/');
+    }
     return view('coming-soon');
 })->name('coming.soon');
 
