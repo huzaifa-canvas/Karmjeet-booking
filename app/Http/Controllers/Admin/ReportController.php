@@ -84,9 +84,10 @@ class ReportController extends Controller
             }
 
             $totalPaid = $payment->amount;
-            $subtotal = $totalPaid / (1 + $totalTaxRate);
+            $subTaxRate = $gstRate / 100;
+            $subtotal = $subTaxRate > 0 ? $totalPaid / (1 + $subTaxRate) : $totalPaid;
             $gstAmount = $subtotal * ($gstRate / 100);
-            $pstAmount = $subtotal * ($pstRate / 100);
+            $pstAmount = 0; // Subscriptions do not have PST
 
             $monthlyData[$month]['subscription_revenue'] += $totalPaid;
             $monthlyData[$month]['gst'] += $gstAmount;
