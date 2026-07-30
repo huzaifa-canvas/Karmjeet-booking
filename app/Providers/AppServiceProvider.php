@@ -25,6 +25,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        if (config('mail.mailers.smtp.auth_mode') === 'xoauth2') {
+            try {
+                $client = new \Google_Client();
+                $client->setClientId(env('GOOGLE_CLIENT_ID'));
+                $client->setClientSecret(env('GOOGLE_CLIENT_SECRET'));
+                $client->refreshToken(env('GOOGLE_REFRESH_TOKEN'));
+                
+                $token = $client->getAccessToken();
+                if ($token && isset($token['access_token'])) {
+                    config(['mail.mailers.smtp.password' => $token['access_token']]);
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Gmail OAuth2 Error: ' . $e->getMessage());
+            }
+        }
     }
 }

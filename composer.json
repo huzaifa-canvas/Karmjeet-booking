@@ -11,6 +11,7 @@
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "*",
         "coconutcraig/laravel-postmark": "^3.0",
+        "google/apiclient": "*",
         "gussrw/laravel-routes": "^1.1",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/breeze": "^2.0",
@@ -18,7 +19,8 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "spatie/laravel-google-calendar": "^3.5",
-        "stripe/stripe-php": "^10.0"
+        "stripe/stripe-php": "^10.0",
+        "symfony/google-mailer": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
