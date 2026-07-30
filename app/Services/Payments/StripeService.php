@@ -55,7 +55,7 @@ class StripeService
                 'line_items' => [
                     [
                         'price_data' => [
-                            'currency' => 'usd',
+                            'currency' => 'cad',
                             'unit_amount' => $unitAmount,
                             'product' => $class->stripe_product_id,
                         ],
@@ -79,7 +79,7 @@ class StripeService
             $interval = 'month';
             
             $newPrice = $this->stripe->prices->create([
-                'currency' => 'usd',
+                'currency' => 'cad',
                 'unit_amount' => $unitAmount,
                 'recurring' => ['interval' => $interval],
                 'product' => $class->stripe_product_id,
@@ -125,7 +125,7 @@ class StripeService
                         $couponData['percent_off'] = $discountCoupon->value;
                     } else {
                         $couponData['amount_off'] = (int)($discountCoupon->value * 100);
-                        $couponData['currency'] = 'usd';
+                        $couponData['currency'] = 'cad';
                     }
                     $this->stripe->coupons->create($couponData);
                 }
@@ -161,7 +161,7 @@ class StripeService
     {
         return $this->stripe->charges->create([
             'amount' => $amount*100,
-            'currency' => 'usd',
+            'currency' => 'cad',
             'source' => $token,
             'description' => "Booking for ". $session,
         ]);
@@ -171,7 +171,7 @@ class StripeService
     {
         $charges =  $this->stripe->charges->create([
             'amount' => $amount*100,
-            'currency' => 'usd',
+            'currency' => 'cad',
             'customer' => $customerID,
             'description' => $description,
         ]);
@@ -206,7 +206,7 @@ class StripeService
     public function createProductOrPriceId($amount,$productName)
     {
         $productId = $this->stripe->products->create(['name' => $productName,]);
-        $priceId = $this->stripe->prices->create(['currency' => 'usd', 'unit_amount' => $amount*100, 'product' => $productId->id,]);
+        $priceId = $this->stripe->prices->create(['currency' => 'cad', 'unit_amount' => $amount*100, 'product' => $productId->id,]);
         return ["productId" => $productId->id, "priceId" => $priceId->id];
     }
 
@@ -217,7 +217,7 @@ class StripeService
             $productId = $product->id;
         }
         if($amount){
-            $priceId = $this->stripe->prices->create(['currency' => 'usd', 'unit_amount' => $amount*100, 'product' => $productId,]);
+            $priceId = $this->stripe->prices->create(['currency' => 'cad', 'unit_amount' => $amount*100, 'product' => $productId,]);
             $priceId = $priceId->id;
         }
         return ["productId" => $productId, "priceId" => $priceId];
@@ -242,7 +242,7 @@ class StripeService
         foreach ($cartItems as $productId => $item) {
             $lineItems[] = [
                 'price_data' => [
-                    'currency'     => 'usd',
+                    'currency'     => 'cad',
                     'unit_amount'  => (int)($item['price'] * 100),
                     'product_data' => [
                         'name' => $item['name'],
@@ -256,7 +256,7 @@ class StripeService
         if ($gstAmount > 0) {
             $lineItems[] = [
                 'price_data' => [
-                    'currency'     => 'usd',
+                    'currency'     => 'cad',
                     'unit_amount'  => (int)(round($gstAmount, 2) * 100),
                     'product_data' => [
                         'name' => 'GST',
@@ -270,7 +270,7 @@ class StripeService
         if ($pstAmount > 0) {
             $lineItems[] = [
                 'price_data' => [
-                    'currency'     => 'usd',
+                    'currency'     => 'cad',
                     'unit_amount'  => (int)(round($pstAmount, 2) * 100),
                     'product_data' => [
                         'name' => 'PST',

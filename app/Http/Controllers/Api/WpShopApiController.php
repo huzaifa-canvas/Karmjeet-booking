@@ -25,7 +25,7 @@ class WpShopApiController extends Controller
         return response()->json([
             'success'    => true,
             'stripe_key' => env('STRIPE_KEY'),
-            'currency'   => 'usd',
+            'currency'   => 'cad',
             'gst_rate'   => $gstSetting ? floatval($gstSetting->value) : 0,
             'pst_rate'   => $pstSetting ? floatval($pstSetting->value) : 0,
         ]);
@@ -234,7 +234,7 @@ class WpShopApiController extends Controller
 
             $paymentIntent = $stripe->paymentIntents->create([
                 'amount'   => (int)($total * 100), // cents
-                'currency' => 'usd',
+                'currency' => 'cad',
                 'metadata' => [
                     'source' => 'wordpress_plugin',
                 ],
