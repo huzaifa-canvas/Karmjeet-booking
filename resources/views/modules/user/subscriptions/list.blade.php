@@ -143,7 +143,13 @@
                                         <span class="fw-bold">{{ $sub->created_at->format('M d, Y') }}</span>
                                     </td>
                                     <td>
-                                        <span class="fw-bold text-dark">${{ number_format($sub->price, 2) }}</span>
+                                        @php $latestPayment = $sub->payments->sortByDesc('id')->first(); @endphp
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold text-dark">${{ number_format($sub->price, 2) }}</span>
+                                            @if($latestPayment)
+                                                <small class="text-success fw-bold">(Paid: ${{ number_format($latestPayment->amount, 2) }})</small>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td>
                                         <div class="d-flex flex-column">

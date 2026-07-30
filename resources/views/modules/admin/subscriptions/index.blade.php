@@ -122,7 +122,15 @@
                                         <span class="badge bg-secondary">Standard</span>
                                     @endif
                                 </td>
-                                <td>${{ number_format($sub->price, 2) }}</td>
+                                <td>
+                                    @php $latestPayment = $sub->payments->sortByDesc('id')->first(); @endphp
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-bolder">${{ number_format($sub->price, 2) }} <small class="text-muted fw-normal">(Base)</small></span>
+                                        @if($latestPayment)
+                                            <small class="text-success fw-bold" title="Total Charged Amount with Tax">Paid: ${{ number_format($latestPayment->amount, 2) }}</small>
+                                        @endif
+                                    </div>
+                                </td>
                                 <td>
                                     <span class="status-badge bg-light-{{ $sub->status == 'active' ? 'success' : ($sub->status == 'expired' ? 'danger' : 'secondary') }} text-{{ $sub->status == 'active' ? 'success' : ($sub->status == 'expired' ? 'danger' : 'secondary') }}">
                                         {{ ucfirst($sub->status) }}

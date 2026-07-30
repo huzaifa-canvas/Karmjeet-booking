@@ -18,9 +18,10 @@ class ReportController extends Controller
      */
     private function getFinancialData(Request $request = null)
     {
-        $settings = SiteSetting::first();
-        $gstRate = $settings->gst_percentage ?? 0;
-        $pstRate = $settings->pst_percentage ?? 0;
+        $gstSetting = SiteSetting::where('key', 'gst_percentage')->first();
+        $pstSetting = SiteSetting::where('key', 'pst_percentage')->first();
+        $gstRate = $gstSetting ? (float)$gstSetting->value : 0;
+        $pstRate = $pstSetting ? (float)$pstSetting->value : 0;
         $totalTaxRate = ($gstRate + $pstRate) / 100;
 
         // Determine date filters
